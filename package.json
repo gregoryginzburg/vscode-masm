@@ -1,0 +1,25 @@
+{
+  "name": "masm",
+  "displayName": "MASM",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "masm",
+      "aliases": ["MASM", "masm"],
+      "extensions": [".asm",".masm"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "masm",
+      "scopeName": "source.masm",
+      "path": "./syntaxes/masm.tmLanguage.json"
+    }]
+  }
+}

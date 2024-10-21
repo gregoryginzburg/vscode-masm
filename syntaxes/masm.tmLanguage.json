@@ -1,0 +1,90 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "MASM",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#registers"
+		},
+		{
+			"include": "#instructions"
+		},
+		{
+			"include": "#directives"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.masm",
+					"match": "\\b(if|else|while|for|return|end)\\b"
+				}
+			]
+		},
+		"registers": {
+			"patterns": [
+				{
+					"name": "variable.register.masm",
+					"match": "\\b(eax|ebx|ecx|edx|esi|edi|esp|ebp|ax|bx|cx|dx|si|di|sp|bp|al|bl|cl|dl|ah|bh|ch|dh)\\b"
+				}
+			]
+		},
+		"instructions": {
+			"patterns": [
+				{
+					"name": "keyword.instruction.masm",
+					"match": "\\b(mov|add|sub|mul|div|jmp|cmp|push|pop|call|ret|inc|dec|and|or|xor|shl|shr)\\b"
+				}
+			]
+		},
+		"directives": {
+			"patterns": [
+				{
+					"name": "keyword.directive.masm",
+					"match": "\\b(SEGMENT|ENDS|ASSUME|ORG|ENDP|PROC|PTR|WORD|DWORD|BYTE)\\b"
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"name": "constant.numeric.masm",
+					"match": "\\b0x[0-9A-Fa-f]+\\b|\\b[0-9]+\\b"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.semicolon.masm",
+					"begin": ";",
+					"end": "$"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.masm",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.masm",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.masm"
+}
