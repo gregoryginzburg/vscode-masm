@@ -10,16 +10,76 @@
     "Programming Languages"
   ],
   "contributes": {
-    "languages": [{
-      "id": "masm",
-      "aliases": ["MASM", "masm"],
-      "extensions": [".asm",".masm"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "masm",
-      "scopeName": "source.masm",
-      "path": "./syntaxes/masm.tmLanguage.json"
-    }]
+    "languages": [
+      {
+        "id": "masm",
+        "aliases": [
+          "MASM",
+          "masm"
+        ],
+        "extensions": [
+          ".asm",
+          ".masm"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "masm",
+        "scopeName": "source.masm",
+        "path": "./syntaxes/masm.tmLanguage.json"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "masm"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "masm",
+        "label": "MASM Debugger",
+        "windows": {
+          "program": "./bin/MasmDebugAdapter.exe"
+        },
+        "languages": [
+          "masm"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "The program executable to debug",
+                "default": "${workspaceFolder}/${fileBasenameNoExtension}.exe"
+              },
+              "args": {
+                "type": "array",
+                "description": "Command line arguments",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Stop at the entry point of the program",
+                "default": false
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "name": "Debug MASM Program",
+            "type": "masm",
+            "request": "launch",
+            "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe",
+            "stopOnEntry": true
+          }
+        ]
+      }
+    ]
   }
 }

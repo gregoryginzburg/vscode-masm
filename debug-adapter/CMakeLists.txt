@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(MasmDebugAdapter LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -27,3 +27,10 @@ target_include_directories(${PROJECT_NAME}
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /permissive- /MP)
 endif()
+
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:${PROJECT_NAME}>
+        ${CMAKE_BINARY_DIR}/../../bin/$<TARGET_FILE_NAME:${PROJECT_NAME}>
+)
