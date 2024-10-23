@@ -139,6 +139,7 @@ int main(int, char* []) {
 
             session->registerHandler([&](const dap::ConfigurationDoneRequest&) {
                 std::cout << "Enter ConfigurationDoneRequest" << std::endl;
+                debugger->configurationDone();
                 std::cout << "Exit ConfigurationDoneRequest\n" << std::endl;
                 return dap::ConfigurationDoneResponse();
             });

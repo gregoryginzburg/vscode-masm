@@ -104,9 +104,11 @@ void Debugger::launch(const std::string &program, const std::string &args)
     // Optionally set symbol path
     hr = debugControl->WaitForEvent(0, INFINITE);
     hr = debugControl->SetEffectiveProcessorType(IMAGE_FILE_MACHINE_I386);
+    // TODO
     debugSymbols->SetSymbolPath("C:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace");
     hr = debugSymbols->Reload("/f");
-    run();
+    hr = debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "l-t", DEBUG_EXECUTE_DEFAULT);
+    // run();
 }
 
 void Debugger::attach(DWORD processId)
@@ -123,6 +125,12 @@ void Debugger::attach(DWORD processId)
         printf("AttachProcess failed: 0x%08X\n", hr);
         return;
     }
+}
+
+void Debugger::configurationDone()
+{
+    // TODO
+    run();
 }
 
 void Debugger::run()
@@ -344,13 +352,13 @@ void Debugger::eventLoop()
             ULONG eventType = 0;
             ULONG processId = 0;
             ULONG threadId;
-            HRESULT hr = debugControl->GetLastEventInformation(&eventType, &processId, &threadId,
-                nullptr,
-                0,
-                nullptr,
-                nullptr,
-                0,
-                nullptr);
+            hr = debugControl->GetLastEventInformation(&eventType, &processId, &threadId,
+                                                       nullptr,
+                                                       0,
+                                                       nullptr,
+                                                       nullptr,
+                                                       0,
+                                                       nullptr);
 
             if (execStatus == DEBUG_STATUS_BREAK)
             {
@@ -426,7 +434,7 @@ void Debugger::eventLoop()
             {
             case CommandType::Run:
             {
-                HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
+                hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
                 if (FAILED(hr))
                 {
                     printf("SetExecutionStatus(GO) failed: 0x%08X\n", hr);
@@ -439,7 +447,7 @@ void Debugger::eventLoop()
             }
             case CommandType::Pause:
             {
-                HRESULT hr = debugControl->SetInterrupt(DEBUG_INTERRUPT_ACTIVE);
+                hr = debugControl->SetInterrupt(DEBUG_INTERRUPT_ACTIVE);
                 if (FAILED(hr))
                 {
                     printf("SetInterrupt failed: 0x%08X\n", hr);
@@ -448,7 +456,7 @@ void Debugger::eventLoop()
             }
             case CommandType::StepOver:
             {
-                HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_OVER);
+                hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_OVER);
                 if (FAILED(hr))
                 {
                     printf("SetExecutionStatus(STEP_OVER) failed: 0x%08X\n", hr);
@@ -461,7 +469,7 @@ void Debugger::eventLoop()
             }
             case CommandType::StepInto:
             {
-                HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_INTO);
+                hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_INTO);
                 if (FAILED(hr))
                 {
                     printf("SetExecutionStatus(STEP_INTO) failed: 0x%08X\n", hr);
@@ -474,12 +482,54 @@ void Debugger::eventLoop()
             }
             case CommandType::StepOut:
             {
-                // HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_OUT);
-                // if (FAILED(hr)) {
-                //     printf("SetExecutionStatus(STEP_OUT) failed: 0x%08X\n", hr);
-                // } else {
-                //     isStopped = false;
-                // }
+                // Get the return address of the current stack frame
+                DEBUG_STACK_FRAME frames[1];
+                ULONG filled = 0;
+                hr = debugControl->GetStackTrace(0, 0, 0, frames, 1, &filled);
+                if (FAILED(hr) || filled == 0)
+                {
+                    printf("GetStackTrace failed: 0x%08X\n", hr);
+                    break;
+                }
+
+                ULONG64 returnOffset = frames[0].ReturnOffset;
+
+                // Set a temporary breakpoint at the return address
+                IDebugBreakpoint *bp = nullptr;
+                hr = debugControl->AddBreakpoint(DEBUG_BREAKPOINT_CODE, DEBUG_ANY_ID, &bp);
+                if (FAILED(hr))
+                {
+                    printf("AddBreakpoint failed: 0x%08X\n", hr);
+                    break;
+                }
+
+                bp->SetOffset(returnOffset);
+                bp->AddFlags(DEBUG_BREAKPOINT_ONE_SHOT);
+                bp->SetFlags(DEBUG_BREAKPOINT_ENABLED);
+
+                // Get breakpoint ID
+                ULONG bpId = 0;
+                hr = bp->GetId(&bpId);
+                if (FAILED(hr))
+                {
+                    printf("GetId failed: 0x%08X\n", hr);
+                    break;
+                }
+
+                // Store the breakpoint ID
+                // this->stepOutBpId = bpId;
+
+                // Continue execution
+                hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
+                if (FAILED(hr))
+                {
+                    printf("SetExecutionStatus(GO) failed: 0x%08X\n", hr);
+                }
+                else
+                {
+                    isStopped = false;
+                }
+                break;
                 break;
             }
             case CommandType::SetBreakpoints:
@@ -495,7 +545,7 @@ void Debugger::eventLoop()
                 {
                     if (bp.second)
                     {
-                        HRESULT hr = debugControl->RemoveBreakpoint(bp.second);
+                        hr = debugControl->RemoveBreakpoint(bp.second);
                         if (FAILED(hr))
                         {
                             printf("IDebugControl::RemoveBreakpoint failed: 0x%08X\n", hr);
@@ -508,7 +558,7 @@ void Debugger::eventLoop()
                 for (dap::integer line : lines)
                 {
                     ULONG64 offset = 0;
-                    HRESULT hr = debugSymbols->GetOffsetByLine(static_cast<ULONG>(line), sourceFile.c_str(), &offset);
+                    hr = debugSymbols->GetOffsetByLine(static_cast<ULONG>(line), sourceFile.c_str(), &offset);
                     if (SUCCEEDED(hr))
                     {
                         IDebugBreakpoint *bp = nullptr;
@@ -534,7 +584,7 @@ void Debugger::eventLoop()
                 std::vector<std::string> registers;
 
                 ULONG numRegisters = 0;
-                HRESULT hr = debugRegisters->GetNumberRegisters(&numRegisters);
+                hr = debugRegisters->GetNumberRegisters(&numRegisters);
                 if (FAILED(hr))
                 {
                     printf("GetNumberRegisters failed: 0x%08X\n", hr);
@@ -581,7 +631,7 @@ void Debugger::eventLoop()
 
                 DEBUG_STACK_FRAME frames[100];
                 ULONG filled = 0;
-                HRESULT hr = debugControl->GetStackTrace(0, 0, 0, frames, 100, &filled);
+                hr = debugControl->GetStackTrace(0, 0, 0, frames, 100, &filled);
                 if (FAILED(hr))
                 {
                     printf("GetStackTrace failed: 0x%08X\n", hr);
@@ -602,11 +652,11 @@ void Debugger::eventLoop()
                         ULONG line = 0;
                         char fileName[MAX_PATH] = {};
 
-                        ULONG64 funcOffset = 0;
-                        hr = debugSymbols->GetOffsetByName(funcName, &funcOffset);
-                        ULONG64 instructionOffset = 0;
-                        hr = debugRegisters->GetInstructionOffset(&instructionOffset);
-                        hr = debugSymbols->GetLineByOffset(instructionOffset, &line, fileName, sizeof(fileName), nullptr, nullptr);
+                        // ULONG64 funcOffset = 0;
+                        // hr = debugSymbols->GetOffsetByName(funcName, &funcOffset);
+                        // ULONG64 instructionOffset = 0;
+                        // hr = debugRegisters->GetInstructionOffset(&instructionOffset);
+                        hr = debugSymbols->GetLineByOffset(frames[i].InstructionOffset, &line, fileName, sizeof(fileName), nullptr, nullptr);
                         if (SUCCEEDED(hr))
                         {
                             frame.name = dap::string(funcName);

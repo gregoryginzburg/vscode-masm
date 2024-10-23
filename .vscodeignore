@@ -1,4 +1,8 @@
 .vscode/**
 .vscode-test/**
 .gitignore
+debug-adapter/**
+bin/MasmDebugAdapter.pdb
+*.vsix
+*.zip
 vsc-extension-quickstart.md

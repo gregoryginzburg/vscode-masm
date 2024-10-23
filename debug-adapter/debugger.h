@@ -32,6 +32,7 @@ public:
 
     void launch(const std::string& program, const std::string& args);
     void attach(DWORD processId);
+    void configurationDone();
 
     // Control methods that queue commands
     void run();
