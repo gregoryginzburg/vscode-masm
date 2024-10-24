@@ -2,6 +2,23 @@
 
 #include <cstdio>
 
+
+class MyOutputCallbacks : public IDebugOutputCallbacks
+{
+public:
+    STDMETHOD(QueryInterface)(REFIID InterfaceId, PVOID* Interface) { return S_OK; }
+    STDMETHOD_(ULONG, AddRef)() { return 1; }
+    STDMETHOD_(ULONG, Release)() { return 1; }
+    STDMETHOD(Output)(ULONG Mask, PCSTR Text)
+    {
+        printf("%s", Text);
+        return S_OK;
+    }
+};
+
+MyOutputCallbacks outputCallbacks;
+
+
 Debugger::Debugger(const EventHandler &handler)
     : onEvent(handler)
 {
@@ -37,21 +54,30 @@ void Debugger::initialize()
     hr = debugClient->QueryInterface(__uuidof(IDebugSymbols), (void **)&debugSymbols);
     hr = debugClient->QueryInterface(__uuidof(IDebugRegisters), (void **)&debugRegisters);
     hr = debugClient->QueryInterface(__uuidof(IDebugSystemObjects), (void **)&debugSystemObjects);
+
+    debugClient->SetOutputCallbacks(&outputCallbacks);
 }
 
 void Debugger::uninitialize()
 {
-    // Clear previous breakpoints
-    // for (auto& bp : breakpoints) {
-    //     if (bp.second) {
-    //         HRESULT hr = debugControl->RemoveBreakpoint(bp.second);
-    //         if (FAILED(hr)) {
-    //             printf("IDebugControl::RemoveBreakpoint failed: 0x%08X\n", hr);
-    //         }
-    //         bp.second->Release();
-    //     }
-    // }
     breakpoints.clear();
+    if (debugClient)
+    {
+        debugClient->EndSession(DEBUG_END_ACTIVE_TERMINATE);
+    }
+
+    // Clear previous breakpoints
+    for (auto &bp : breakpoints)
+    {
+        if (bp.second)
+        {
+            HRESULT hr = debugControl->RemoveBreakpoint(bp.second);
+            if (FAILED(hr))
+            {
+                printf("IDebugControl::RemoveBreakpoint failed: 0x%08X\n", hr);
+            }
+        }
+    }
 
     if (debugSystemObjects)
     {
@@ -65,6 +91,7 @@ void Debugger::uninitialize()
     }
     if (debugSymbols)
     {
+        debugSymbols->SetSymbolPath("");
         debugSymbols->Release();
         debugSymbols = nullptr;
     }
@@ -75,7 +102,7 @@ void Debugger::uninitialize()
     }
     if (debugClient)
     {
-        debugClient->EndSession(DEBUG_END_ACTIVE_TERMINATE);
+
         debugClient->Release();
         debugClient = nullptr;
     }
@@ -105,8 +132,10 @@ void Debugger::launch(const std::string &program, const std::string &args)
     hr = debugControl->WaitForEvent(0, INFINITE);
     hr = debugControl->SetEffectiveProcessorType(IMAGE_FILE_MACHINE_I386);
     // TODO
+    // debugSymbols->SetSymbolOptions(SYMOPT_LOAD_LINES | SYMOPT_DEFERRED_LOADS);
+    // hr = debugControl->Execute(DEBUG_OUTCTL_ALL_CLIENTS, ".symopt+ 0x80000000", DEBUG_EXECUTE_NOT_LOGGED);
     debugSymbols->SetSymbolPath("C:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace");
-    hr = debugSymbols->Reload("/f");
+    hr = debugSymbols->Reload("/f /i");
     hr = debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "l-t", DEBUG_EXECUTE_DEFAULT);
     // run();
 }
@@ -237,6 +266,7 @@ void Debugger::setBreakpoints(const std::string &sourceFile, const std::vector<d
             debugControl->SetInterrupt(DEBUG_INTERRUPT_ACTIVE);
         }
     }
+
 }
 
 std::vector<std::string> Debugger::getRegisters()

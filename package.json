@@ -9,7 +9,38 @@
   "categories": [
     "Programming Languages"
   ],
+  "main": "./src/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "extension.runMasmFile",
+        "title": "Run Masm File",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "extension.debugMasmFile",
+        "title": "Debug Masm File",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "helloworld.helloWorld",
+        "title": "Hello World"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "extension.runMasmFile",
+          "when": "resourceLangId == masm",
+          "group": "navigation"
+        },
+        {
+          "command": "extension.debugMasmFile",
+          "when": "resourceLangId == masm",
+          "group": "navigation"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "masm",
@@ -81,5 +112,21 @@
         ]
       }
     ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "dependencies": {
+    "typescript": "^5.6.3",
+    "@types/vscode": "^1.1.37",
+    "vscode-languageclient": "^7.0.0",
+    "vscode-languageserver": "^7.0.0",
+    "vscode-languageserver-textdocument": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.9"
   }
 }

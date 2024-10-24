@@ -52,6 +52,8 @@ public:
     // Signal the debugger to exit
     void exit();
 
+    std::shared_future<void> getInitializationFuture() const;
+
 private:
     void initialize();
     void uninitialize();
@@ -101,5 +103,9 @@ private:
     // Current execution info
     ULONG currentThreadId = 0;
     ULONG64 currentInstructionOffset = 0;
+
+    // To wait for initlization completion
+    std::promise<void> initializationPromise;
+    std::shared_future<void> initializationFuture;
 };
 

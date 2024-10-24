@@ -17,103 +17,112 @@
 
 #define USE_SERVER_MODE
 
-namespace dap {
+namespace dap
+{
 
-// Custom LaunchRequest to include additional fields
-class MyLaunchRequest : public LaunchRequest {
-public:
-    // The program executable path.
-    dap::string program;
+    // Custom LaunchRequest to include additional fields
+    class MyLaunchRequest : public LaunchRequest
+    {
+    public:
+        // The program executable path.
+        dap::string program;
 
-    // Command line arguments for the program.
-    optional<array<string>> args;
+        // Command line arguments for the program.
+        optional<array<string>> args;
 
-    // Whether to stop at the entry point of the program.
-    optional<boolean> stopOnEntry;
-};
+        // Whether to stop at the entry point of the program.
+        optional<boolean> stopOnEntry;
+    };
 
-DAP_STRUCT_TYPEINFO_EXT(
-    MyLaunchRequest,
-    LaunchRequest,
-    "launch",
-    DAP_FIELD(program, "program"),
-    DAP_FIELD(args, "args"),
-    DAP_FIELD(stopOnEntry, "stopOnEntry"));
+    DAP_STRUCT_TYPEINFO_EXT(
+        MyLaunchRequest,
+        LaunchRequest,
+        "launch",
+        DAP_FIELD(program, "program"),
+        DAP_FIELD(args, "args"),
+        DAP_FIELD(stopOnEntry, "stopOnEntry"));
 
 } // namespace dap
 
-int main(int, char* []) {
+int main(int, char *[])
+{
     constexpr int kPort = 19021;
 
     // Callback handler for a socket connection to the server
-    auto onClientConnected = [&](const std::shared_ptr<dap::ReaderWriter>& socket) {
+    auto onClientConnected = [&](const std::shared_ptr<dap::ReaderWriter> &socket)
+    {
         // Start a new thread for each client connection
-        std::thread([socket]() {
-            auto session = dap::Session::create();
 
-            // Set the session to close on invalid data
-            session->setOnInvalidData(dap::kClose);
+        auto session = dap::Session::create();
 
-            // Signal used to terminate the server session when a DisconnectRequest
-            // is made by the client.
-            SessionState state;
+        // Set the session to close on invalid data
+        session->setOnInvalidData(dap::kClose);
 
-            // Shared pointer to Debugger instance
-            std::shared_ptr<Debugger> debugger;
+        // Signal used to terminate the server session when a DisconnectRequest
+        // is made by the client.
+        SessionState state;
 
-            // Event handler for Debugger events
-            auto debuggerEventHandler = [&session, &state](Debugger::Event event) {
-                switch (event) {
-                case Debugger::Event::BreakpointHit:
-                case Debugger::Event::Stepped:
-                case Debugger::Event::Paused: {
-                    dap::StoppedEvent stoppedEvent;
-                    stoppedEvent.threadId = 1;
-                    stoppedEvent.reason = "breakpoint";
-                    session->send(stoppedEvent);
-                    break;
-                }
-                case Debugger::Event::Exited: {
-                    dap::ExitedEvent exitedEvent;
-                    session->send(exitedEvent);
+        // Shared pointer to Debugger instance
+        std::shared_ptr<Debugger> debugger;
 
-                    // Signal termination
-                    {
-                        std::lock_guard<std::mutex> lock(state.mutex);
-                        state.terminate = true;
-                    }
-                    state.cv.notify_one();
-                    break;
-                }
-                }
-            };
+        // Event handler for Debugger events
+        auto debuggerEventHandler = [&session, &state](Debugger::Event event)
+        {
+            switch (event)
+            {
+            case Debugger::Event::BreakpointHit:
+            case Debugger::Event::Stepped:
+            case Debugger::Event::Paused:
+            {
+                dap::StoppedEvent stoppedEvent;
+                stoppedEvent.threadId = 1;
+                stoppedEvent.reason = "breakpoint";
+                session->send(stoppedEvent);
+                break;
+            }
+            case Debugger::Event::Exited:
+            {
+                dap::ExitedEvent exitedEvent;
+                session->send(exitedEvent);
 
-            session->onError([&](const char* msg) {
-                printf("Session error: %s\n", msg);
                 // Signal termination
                 {
                     std::lock_guard<std::mutex> lock(state.mutex);
                     state.terminate = true;
                 }
                 state.cv.notify_one();
-            });
+                break;
+            }
+            }
+        };
 
-            // Register DAP handlers
-            session->registerHandler([&](const dap::InitializeRequest&) {
+        session->onError([&](const char *msg)
+                         {
+                printf("Session error: %s\n", msg);
+                // Signal termination
+                {
+                    std::lock_guard<std::mutex> lock(state.mutex);
+                    state.terminate = true;
+                }
+                state.cv.notify_one(); });
+
+        // Register DAP handlers
+        session->registerHandler([&](const dap::InitializeRequest &)
+                                 {
                 std::cout << "Enter InitializeRequest" << std::endl;
                 dap::InitializeResponse response;
                 response.supportsConfigurationDoneRequest = true;
                 std::cout << "Exit InitializeRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerSentHandler([&](const dap::ResponseOrError<dap::InitializeResponse>&) {
+        session->registerSentHandler([&](const dap::ResponseOrError<dap::InitializeResponse> &)
+                                     {
                 std::cout << "Enter InitializeResponse" << std::endl;
                 std::cout << "Exit InitializeResponse\n" << std::endl;
-                session->send(dap::InitializedEvent());
-            });
+                session->send(dap::InitializedEvent()); });
 
-            session->registerHandler([&](const dap::MyLaunchRequest& request) {
+        session->registerHandler([&](const dap::MyLaunchRequest &request)
+                                 {
                 std::cout << "Enter LaunchRequest" << std::endl;
                 // Start the program
                 std::string program = request.program;
@@ -134,17 +143,17 @@ int main(int, char* []) {
                 }).detach();
 
                 std::cout << "Exit InitializeRequest\n" << std::endl;
-                return dap::LaunchResponse();
-            });
+                return dap::LaunchResponse(); });
 
-            session->registerHandler([&](const dap::ConfigurationDoneRequest&) {
+        session->registerHandler([&](const dap::ConfigurationDoneRequest &)
+                                 {
                 std::cout << "Enter ConfigurationDoneRequest" << std::endl;
                 debugger->configurationDone();
                 std::cout << "Exit ConfigurationDoneRequest\n" << std::endl;
-                return dap::ConfigurationDoneResponse();
-            });
+                return dap::ConfigurationDoneResponse(); });
 
-            session->registerHandler([&](const dap::SetBreakpointsRequest& request) {
+        session->registerHandler([&](const dap::SetBreakpointsRequest &request)
+                                 {
                 std::cout << "Enter SetBreakpointsRequest" << std::endl;
                 std::vector<dap::integer> lines;
                 for (const auto& bp : request.breakpoints.value({})) {
@@ -163,10 +172,10 @@ int main(int, char* []) {
                     response.breakpoints.push_back(breakpoint);
                 }
                 std::cout << "Exit SetBreakpointsRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerHandler([&](const dap::ThreadsRequest&) {
+        session->registerHandler([&](const dap::ThreadsRequest &)
+                                 {
                 std::cout << "Enter ThreadsRequest" << std::endl;
                 dap::ThreadsResponse response;
                 dap::Thread thread;
@@ -174,20 +183,20 @@ int main(int, char* []) {
                 thread.name = "Main Thread";
                 response.threads.push_back(thread);
                 std::cout << "Exit ThreadsRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerHandler([&](const dap::StackTraceRequest&) {
+        session->registerHandler([&](const dap::StackTraceRequest &)
+                                 {
                 std::cout << "Enter StackTraceRequest" << std::endl;
                 dap::StackTraceResponse response;
                 if (debugger) {
                     response.stackFrames = debugger->getCallStack();
                 }
                 std::cout << "Exit StackTraceRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerHandler([&](const dap::ScopesRequest&) {
+        session->registerHandler([&](const dap::ScopesRequest &)
+                                 {
                 std::cout << "Enter ScopesRequest" << std::endl;
                 dap::ScopesResponse response;
                 dap::Scope scope;
@@ -196,10 +205,10 @@ int main(int, char* []) {
                 scope.presentationHint = "registers";
                 response.scopes.push_back(scope);
                 std::cout << "Exit ScopesRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerHandler([&](const dap::VariablesRequest&) {
+        session->registerHandler([&](const dap::VariablesRequest &)
+                                 {
                 std::cout << "Enter VariablesRequest" << std::endl;
                 dap::VariablesResponse response;
                 if (debugger) {
@@ -218,10 +227,10 @@ int main(int, char* []) {
                     }
                 }
                 std::cout << "Exit VariablesRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerHandler([&](const dap::ContinueRequest&) {
+        session->registerHandler([&](const dap::ContinueRequest &)
+                                 {
                 std::cout << "Enter ContinueRequest" << std::endl;
                 if (debugger) {
                     debugger->run();
@@ -229,46 +238,46 @@ int main(int, char* []) {
                 dap::ContinueResponse response;
                 response.allThreadsContinued = true;
                 std::cout << "Exit ContinueRequest\n" << std::endl;
-                return response;
-            });
+                return response; });
 
-            session->registerHandler([&](const dap::PauseRequest&) {
+        session->registerHandler([&](const dap::PauseRequest &)
+                                 {
                 std::cout << "Enter PauseRequest" << std::endl;
                 if (debugger) {
                     debugger->pause();
                 }
                 std::cout << "Exit PauseRequest\n" << std::endl;
-                return dap::PauseResponse();
-            });
+                return dap::PauseResponse(); });
 
-            session->registerHandler([&](const dap::NextRequest&) {
+        session->registerHandler([&](const dap::NextRequest &)
+                                 {
                 std::cout << "Enter NextRequest" << std::endl;
                 if (debugger) {
                     debugger->stepOver();
                 }
                 std::cout << "Exit NextRequest\n" << std::endl;
-                return dap::NextResponse();
-            });
+                return dap::NextResponse(); });
 
-            session->registerHandler([&](const dap::StepInRequest&) {
+        session->registerHandler([&](const dap::StepInRequest &)
+                                 {
                 std::cout << "Enter StepInRequest" << std::endl;
                 if (debugger) {
                     debugger->stepInto();
                 }
                 std::cout << "Exit StepInRequest\n" << std::endl;
-                return dap::StepInResponse();
-            });
+                return dap::StepInResponse(); });
 
-            session->registerHandler([&](const dap::StepOutRequest&) {
+        session->registerHandler([&](const dap::StepOutRequest &)
+                                 {
                 std::cout << "Enter StepOutRequest" << std::endl;
                 if (debugger) {
                     debugger->stepOut();
                 }
                 std::cout << "Exit StepOutRequest\n" << std::endl;
-                return dap::StepOutResponse();
-            });
+                return dap::StepOutResponse(); });
 
-            session->registerHandler([&](const dap::DisconnectRequest&) {
+        session->registerHandler([&](const dap::DisconnectRequest &)
+                                 {
                 std::cout << "Enter DisconnectRequest" << std::endl;
                 if (debugger) {
                     debugger->exit();
@@ -280,20 +289,20 @@ int main(int, char* []) {
                 }
                 state.cv.notify_one();
                 std::cout << "Exit DisconnectRequest\n" << std::endl;
-                return dap::DisconnectResponse();
-            });
+                return dap::DisconnectResponse(); });
 
-            session->bind(socket);
+        session->bind(socket);
 
-            // Wait for the client to disconnect before releasing the session and disconnecting the socket
-            std::unique_lock<std::mutex> lock(state.mutex);
-            state.cv.wait(lock, [&] { return state.terminate; });
-            printf("Server closing connection\n");
-        }).detach();
+        // Wait for the client to disconnect before releasing the session and disconnecting the socket
+        std::unique_lock<std::mutex> lock(state.mutex);
+        state.cv.wait(lock, [&]
+                      { return state.terminate; });
+        printf("Server closing connection\n");
     };
 
     // Error handler
-    auto onError = [&](const char* msg) { printf("Server error: %s\n", msg); };
+    auto onError = [&](const char *msg)
+    { printf("Server error: %s\n", msg); };
 
     // Create the network server
     auto server = dap::net::Server::create();
