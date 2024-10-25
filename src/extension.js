@@ -1,5 +1,6 @@
 const path = require('path');
 const vscode = require('vscode');
+const { exec } = require('child_process');
 const {
   LanguageClient,
   LanguageClientOptions,
@@ -9,6 +10,7 @@ const {
 
 let client;
 const lastModifiedMap = new Map(); // Stores last modified timestamps for files
+let masmTerminal = null;
 
 function activate(context) {
   // Server module path
@@ -65,7 +67,8 @@ function activate(context) {
 
     if (lastModifiedMap.has(filePath) && lastModifiedMap.get(filePath) === lastModified) {
       vscode.window.showInformationMessage('No changes detected. Using existing executable.');
-      executeTerminal(outputFilePath);
+      // executeTerminal(outputFilePath);
+      executeExternalConsole(outputFilePath);
     } else {
       lastModifiedMap.set(filePath, lastModified);
 
@@ -82,7 +85,8 @@ function activate(context) {
             if (event.execution === taskExecution) {
               if (event.exitCode === 0) {
                 vscode.window.showInformationMessage('Link task executed successfully!');
-                executeTerminal(outputFilePath);
+                // executeTerminal(outputFilePath);
+                executeExternalConsole(outputFilePath);
               } else {
                 vscode.window.showErrorMessage('Link task failed. Please check the output for details.');
               }
@@ -160,13 +164,39 @@ function activate(context) {
 
   // Helper function to execute the terminal
   function executeTerminal(executablePath) {
-    const terminal = vscode.window.createTerminal({
-      name: 'Run MASM',
-      cwd: path.dirname(executablePath)
-    });
-    terminal.sendText(`"${executablePath}"`);
-    terminal.show();
+    // Check if the terminal already exists and is still active
+    if (!masmTerminal || masmTerminal.exitStatus) {
+      masmTerminal = vscode.window.createTerminal({
+        name: 'Run MASM',
+        shellPath: 'cmd.exe', // Use CMD as the shell
+        shellArgs: ['/K'],    // Keep the terminal open after the command runs
+        cwd: path.dirname(executablePath)
+      });
+    } else {
+      // If the terminal is active, just change its working directory
+      // masmTerminal.sendText(`cd /d "${path.dirname(executablePath)}"`);
+    }
+
+    // Run the executable in the terminal
+    masmTerminal.sendText(`"${executablePath}"`);
+    masmTerminal.show();
   }
+  function executeExternalConsole(executablePath) {
+    // Use child_process to open a new command prompt and run the executable
+    const command = `start cmd.exe /C "${executablePath} & echo. & echo. & echo ------------------ & echo (program exited with code: %ERRORLEVEL%) & <nul set /p=Press any key to close this window . . . & pause >nul"`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        vscode.window.showErrorMessage(`Error running executable: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        vscode.window.showWarningMessage(`Executable output: ${stderr}`);
+      }
+      console.log(stdout);
+    });
+  }
+
+
 
   // Helper function to launch the debugger
   function launchDebugger(executablePath) {
@@ -177,7 +207,7 @@ function activate(context) {
       program: executablePath,
       args: [],
       stopOnEntry: true,
-      debugServer: 19021,
+      // debugServer: 19021,
       // preLaunchTask: "Link"
     }).then(
       success => {

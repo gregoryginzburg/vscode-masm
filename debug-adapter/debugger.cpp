@@ -1,15 +1,19 @@
 #include "debugger.h"
 
 #include <cstdio>
-
+#include <iostream>
 
 class MyOutputCallbacks : public IDebugOutputCallbacks
 {
 public:
-    STDMETHOD(QueryInterface)(REFIID InterfaceId, PVOID* Interface) { return S_OK; }
-    STDMETHOD_(ULONG, AddRef)() { return 1; }
-    STDMETHOD_(ULONG, Release)() { return 1; }
-    STDMETHOD(Output)(ULONG Mask, PCSTR Text)
+    STDMETHOD(QueryInterface)
+    (REFIID /*InterfaceId*/, PVOID * /*Interface*/) { return S_OK; }
+    STDMETHOD_(ULONG, AddRef)
+    () { return 1; }
+    STDMETHOD_(ULONG, Release)
+    () { return 1; }
+    STDMETHOD(Output)
+    (ULONG /*Mask*/, PCSTR Text)
     {
         printf("%s", Text);
         return S_OK;
@@ -18,10 +22,14 @@ public:
 
 MyOutputCallbacks outputCallbacks;
 
-
 Debugger::Debugger(const EventHandler &handler)
     : onEvent(handler)
 {
+}
+
+std::shared_future<void> Debugger::getInitializationFuture() const
+{
+    return initializationFuture;
 }
 
 Debugger::~Debugger()
@@ -119,16 +127,17 @@ void Debugger::launch(const std::string &program, const std::string &args)
     HRESULT hr = debugClient->CreateProcess(
         NULL,
         const_cast<char *>(command.c_str()),
-        DEBUG_PROCESS);
+        DEBUG_PROCESS | CREATE_NEW_CONSOLE);
+    
 
     if (FAILED(hr))
     {
         printf("CreateProcess failed: 0x%08X\n", hr);
+        // initializationPromise.set_value();
         return;
     }
     hr = debugControl->SetEngineOptions(DEBUG_ENGOPT_INITIAL_BREAK);
 
-    // Optionally set symbol path
     hr = debugControl->WaitForEvent(0, INFINITE);
     hr = debugControl->SetEffectiveProcessorType(IMAGE_FILE_MACHINE_I386);
     // TODO
@@ -137,6 +146,8 @@ void Debugger::launch(const std::string &program, const std::string &args)
     debugSymbols->SetSymbolPath("C:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace");
     hr = debugSymbols->Reload("/f /i");
     hr = debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "l-t", DEBUG_EXECUTE_DEFAULT);
+    // signal for completion
+    // initializationPromise.set_value();
     // run();
 }
 
@@ -253,9 +264,16 @@ void Debugger::stepOut()
 
 void Debugger::setBreakpoints(const std::string &sourceFile, const std::vector<dap::integer> &lines)
 {
+
+    Command cmd;
+    cmd.type = CommandType::SetBreakpoints;
+    std::promise<std::any> promise;
+    cmd.promise = std::move(promise);
+    cmd.data = std::make_any<std::pair<std::string, std::vector<dap::integer>>>(sourceFile, lines);
+    std::future<std::any> future = cmd.promise.get_future();
     {
         std::lock_guard<std::mutex> lock(commandMutex);
-        commandQueue.push({CommandType::SetBreakpoints, std::make_any<std::pair<std::string, std::vector<dap::integer>>>(sourceFile, lines)});
+        commandQueue.push(std::move(cmd));
     }
     commandCV.notify_one();
 
@@ -266,7 +284,8 @@ void Debugger::setBreakpoints(const std::string &sourceFile, const std::vector<d
             debugControl->SetInterrupt(DEBUG_INTERRUPT_ACTIVE);
         }
     }
-
+    // Wait for completion
+    future.wait();
 }
 
 std::vector<std::string> Debugger::getRegisters()
@@ -560,7 +579,6 @@ void Debugger::eventLoop()
                     isStopped = false;
                 }
                 break;
-                break;
             }
             case CommandType::SetBreakpoints:
             {
@@ -605,6 +623,8 @@ void Debugger::eventLoop()
                         printf("GetOffsetByLine failed for line %d: 0x%08X\n", static_cast<int>(line), hr);
                     }
                 }
+                // signal for completion
+                cmd.promise.set_value("");
                 break;
             }
             case CommandType::GetRegisters:

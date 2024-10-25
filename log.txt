@@ -1,0 +1,127 @@
+
+->Content-Length:
+-> 
+->5
+->3
+->9
+->
+->
+
+
+->{"command":"initialize","arguments":{"clientID":"vscode","clientName":"Visual Studio Code","adapterID":"masm","pathFormat":"path","linesStartAt1":true,"columnsStartAt1":true,"supportsVariableType":true,"supportsVariablePaging":true,"supportsRunInTerminalRe
+->quest":true,"locale":"en","supportsProgressReporting":true,"supportsInvalidatedEvent":true,"supportsMemoryReferences":true,"supportsArgsCanBeInterpretedByShell":true,"supportsMemoryEvent":true,"supportsStartDebuggingRequest":true,"supportsANSIStyling":true
+->},"type":"request","seq":1}
+<-Content-Length: 130
+
+
+<-{"body":{"supportsConfigurationDoneRequest":true},"command":"initialize","request_seq":1,"seq":1,"success":true,"type":"response"}
+<-Content-Length: 56
+
+
+<-{"body":{},"event":"initialized","seq":2,"type":"event"}
+->Content-Length:
+-> 
+->2
+->8
+->6
+->
+->
+
+
+->{"command":"launch","arguments":{"name":"Debug MASM Program","type":"masm","request":"launch","program":"c:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace\\test.exe","args":[],"stopOnEntry":true,"__sessionId":"dda2804f-842b-490c-bd0f-5253c53c6e
+->f4"},"type":"request","seq":2}
+->Content-Length:
+-> 
+->2
+->3
+->5
+->
+->
+
+
+->{"command":"setBreakpoints","arguments":{"source":{"name":"a.asm","path":"c:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace\\a.asm"},"lines":[20],"breakpoints":[{"line":20}],"sourceModified":false},"type":"request","seq":3}
+<-Content-Length: 87
+
+
+<-{"body":{},"command":"launch","request_seq":2,"seq":3,"success":true,"type":"response"}
+->Content-Length:
+-> 
+->2
+->4
+->1
+->
+->
+
+
+->{"command":"setBreakpoints","arguments":{"source":{"name":"test.asm","path":"c:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace\\test.asm"},"lines":[31],"breakpoints":[{"line":31}],"sourceModified":false},"type":"request","seq":4}
+<-Content-Length: 86
+
+
+<-{"body":{"reason":"breakpoint","threadId":1},"event":"stopped","seq":4,"type":"event"}
+<-Content-Length: 138
+
+
+<-{"body":{"breakpoints":[{"line":20,"verified":true}]},"command":"setBreakpoints","request_seq":3,"seq":5,"success":true,"type":"response"}
+<-Content-Length: 138
+
+
+<-{"body":{"breakpoints":[{"line":31,"verified":true}]},"command":"setBreakpoints","request_seq":4,"seq":6,"success":true,"type":"response"}
+->Content-Length:
+-> 
+->4
+->6
+->
+->
+
+
+->{"command":"threads","type":"request","seq":5}
+<-Content-Length: 129
+
+
+<-{"body":{"threads":[{"id":1,"name":"Main Thread"}]},"command":"threads","request_seq":5,"seq":7,"success":true,"type":"response"}
+->Content-Length:
+-> 
+->5
+->6
+->
+->
+
+
+->{"command":"configurationDone","type":"request","seq":6}
+<-Content-Length: 98
+
+
+<-{"body":{},"command":"configurationDone","request_seq":6,"seq":8,"success":true,"type":"response"}
+->Content-Length:
+-> 
+->1
+->0
+->3
+->
+->
+
+
+->{"command":"stackTrace","arguments":{"threadId":1,"startFrame":0,"levels":20},"type":"request","seq":7}
+->Content-Length:
+-> 
+->4
+->6
+->
+->
+
+
+->{"command":"threads","type":"request","seq":8}
+<-Content-Length: 63
+
+
+<-{"body":{"exitCode":0},"event":"exited","seq":9,"type":"event"}
+->Content-Length:
+-> 
+->1
+->0
+->3
+->
+->
+
+
+->{"command":"stackTrace","arguments":{"threadId":1,"startFrame":0,"levels":20},"type":"request","seq":9}

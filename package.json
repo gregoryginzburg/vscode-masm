@@ -27,6 +27,18 @@
         "title": "Hello World"
       }
     ],
+    "keybindings": [
+      {
+        "command": "extension.debugMasmFile",
+        "key": "F5",
+        "when": "editorLangId == masm"
+      },
+      {
+        "command": "extension.runMasmFile",
+        "key": "ctrl+F5",
+        "when": "editorLangId == masm"
+      }
+    ],
     "menus": {
       "editor/title": [
         {
