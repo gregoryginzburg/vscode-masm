@@ -67,21 +67,36 @@ int main(int, char *[])
         std::shared_ptr<Debugger> debugger;
 
         // Event handler for Debugger events
-        auto debuggerEventHandler = [&session, &state](Debugger::Event event)
+        auto debuggerEventHandler = [&session, &state](Debugger::EventType event)
         {
             switch (event)
             {
-            case Debugger::Event::BreakpointHit:
-            case Debugger::Event::Stepped:
-            case Debugger::Event::Paused:
+            case Debugger::EventType::BreakpointHit:
             {
                 dap::StoppedEvent stoppedEvent;
                 stoppedEvent.threadId = 1;
                 stoppedEvent.reason = "breakpoint";
+                std::cout << "Sent breakpoint hit event" << std::endl;
                 session->send(stoppedEvent);
                 break;
             }
-            case Debugger::Event::Exited:
+            case Debugger::EventType::Stepped:
+            {
+                dap::StoppedEvent stoppedEvent;
+                stoppedEvent.threadId = 1;
+                stoppedEvent.reason = "step";
+                session->send(stoppedEvent);
+                break;
+            }
+            case Debugger::EventType::Paused:
+            {
+                dap::StoppedEvent stoppedEvent;
+                stoppedEvent.threadId = 1;
+                stoppedEvent.reason = "pause";
+                session->send(stoppedEvent);
+                break;
+            }
+            case Debugger::EventType::Exited:
             {
                 dap::ExitedEvent exitedEvent;
                 session->send(exitedEvent);
@@ -111,6 +126,9 @@ int main(int, char *[])
                 std::cout << "Enter InitializeRequest" << std::endl;
                 dap::InitializeResponse response;
                 response.supportsConfigurationDoneRequest = true;
+                // Create the Debugger instance
+                debugger = std::make_shared<Debugger>(debuggerEventHandler);
+
                 std::cout << "Exit InitializeRequest\n" << std::endl;
                 return response; });
 
@@ -131,10 +149,7 @@ int main(int, char *[])
                         args += arg + " ";
                     }
                 }
-
-                // Create the Debugger instance
-                debugger = std::make_shared<Debugger>(debuggerEventHandler);
-
+                // debugger->waitForConfigurationDone();
                 // Start the debugger in a new thread
                 std::thread([debugger, program, args]() {
                     debugger->launch(program, args);
@@ -142,9 +157,8 @@ int main(int, char *[])
                 }).detach();
 
                 // Wait for the debugger to initialize
-                // debugger->getInitializationFuture().wait();
+                debugger->waitForInitialization();
 
-                std::cout << "Exit InitializeRequest\n" << std::endl;
                 return dap::LaunchResponse(); });
 
         session->registerHandler([&](const dap::ConfigurationDoneRequest &)
@@ -342,13 +356,13 @@ int main()
     std::shared_ptr<Debugger> debugger;
 
     // Event handler for Debugger events
-    auto debuggerEventHandler = [&session, &state](Debugger::Event event)
+    auto debuggerEventHandler = [&session, &state](Debugger::EventType event)
     {
         switch (event)
         {
-        case Debugger::Event::BreakpointHit:
-        case Debugger::Event::Stepped:
-        case Debugger::Event::Paused:
+        case Debugger::EventType::BreakpointHit:
+        case Debugger::EventType::Stepped:
+        case Debugger::EventType::Paused:
         {
             dap::StoppedEvent stoppedEvent;
             stoppedEvent.threadId = 1;
@@ -356,7 +370,7 @@ int main()
             session->send(stoppedEvent);
             break;
         }
-        case Debugger::Event::Exited:
+        case Debugger::EventType::Exited:
         {
             dap::ExitedEvent exitedEvent;
             session->send(exitedEvent);

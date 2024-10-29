@@ -1,111 +1,72 @@
 #pragma once
 
-#include "dap/protocol.h"
-#include "dap/session.h"
-
-#include <Windows.h>
-#include <DbgEng.h>
-
-#include <any>
-#include <condition_variable>
+#include <windows.h>
+#include <dbgeng.h>
 #include <functional>
-#include <future>
-#include <mutex>
-#include <queue>
-#include <string>
-#include <unordered_map>
 #include <vector>
+#include <string>
+#include <mutex>
+#include <condition_variable>
+#include <unordered_map>
+#include "dap/protocol.h"
+#include "event.h"
 
-class Debugger {
+class Debugger
+{
 public:
-    enum class Event {
+    enum class EventType
+    {
         BreakpointHit,
         Stepped,
         Paused,
-        Exited
+        Exited,
     };
 
-    using EventHandler = std::function<void(Event)>;
+    using EventHandler = std::function<void(EventType)>;
 
     Debugger(const EventHandler& handler);
     ~Debugger();
 
     void launch(const std::string& program, const std::string& args);
-    void attach(DWORD processId);
     void configurationDone();
-
-    // Control methods that queue commands
     void run();
     void pause();
     void stepOver();
     void stepInto();
     void stepOut();
     void setBreakpoints(const std::string& sourceFile, const std::vector<dap::integer>& lines);
-
-    // Methods to get debugger information
     std::vector<std::string> getRegisters();
     std::vector<dap::StackFrame> getCallStack();
-
-    // Start the event loop; must be called from the same thread that initializes DbgEng
-    void eventLoop();
-
-    // Signal the debugger to exit
     void exit();
-
-    std::shared_future<void> getInitializationFuture() const;
+    void eventLoop();
+    void waitForInitialization();
+    // void waitForConfigurationDone();
 
 private:
     void initialize();
     void uninitialize();
+    int getCurrentLineNumber();
 
-    // Command types
-    enum class CommandType {
-        Run,
-        Pause,
-        StepOver,
-        StepInto,
-        StepOut,
-        SetBreakpoints,
-        GetRegisters,
-        GetCallStack,
-        Exit
-    };
-
-    // Command structure
-    struct Command {
-        CommandType type;
-        std::any data;
-        std::promise<std::any> promise;
-    };
-
-    // Thread-safe command queue
-    std::queue<Command> commandQueue;
-    std::mutex commandMutex;
-    std::condition_variable commandCV;
+    // Synchronization primitives
+    std::mutex debugMutex;
+    Event hasExited;
+    Event hasInitialized;
+    // Event configurationDoneEvent;
+    bool isStopped = true;
     bool shouldExit = false;
+    int lastLineBreak = -1;
 
-    // Event handler
-    EventHandler onEvent;
 
-    // DbgEng interfaces
+    // Debugger interfaces
     IDebugClient* debugClient = nullptr;
     IDebugControl* debugControl = nullptr;
     IDebugSymbols* debugSymbols = nullptr;
     IDebugRegisters* debugRegisters = nullptr;
     IDebugSystemObjects* debugSystemObjects = nullptr;
 
-    // Mutex to protect access to debugControl
-    std::mutex debugControlMutex;
-
     // Breakpoints
     std::unordered_map<ULONG64, IDebugBreakpoint*> breakpoints;
 
-    // Current execution info
-    ULONG currentThreadId = 0;
-    ULONG64 currentInstructionOffset = 0;
-
-    // To wait for initlization completion
-    std::promise<void> initializationPromise;
-    std::shared_future<void> initializationFuture;
+    // Other variables
+    EventHandler onEvent;
 };
-

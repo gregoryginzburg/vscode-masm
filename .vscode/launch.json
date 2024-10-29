@@ -19,7 +19,7 @@
             "request": "launch",
 			"program": "${command:cmake.launchTargetPath}",
 			"cwd": "${workspaceFolder}",
-			"externalConsole": true
+			"externalConsole": false
         }
 	]
 }
