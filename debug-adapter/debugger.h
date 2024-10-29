@@ -20,6 +20,7 @@ public:
         Stepped,
         Paused,
         Exited,
+        Exception
     };
 
     using EventHandler = std::function<void(EventType)>;

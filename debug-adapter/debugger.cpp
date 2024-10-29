@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <iostream>
 #include <thread>
+#include <filesystem>
 
 class MyOutputCallbacks : public IDebugOutputCallbacks
 {
@@ -16,7 +17,7 @@ public:
     STDMETHOD(Output)
     (ULONG /*Mask*/, PCSTR Text)
     {
-        printf("%s", Text);
+        // printf("%s", Text);
         return S_OK;
     }
 };
@@ -142,7 +143,8 @@ void Debugger::launch(const std::string &program, const std::string &args)
 
     // hr = debugControl->SetEffectiveProcessorType(IMAGE_FILE_MACHINE_I386);
     //  Set symbol path as needed
-    hr = debugSymbols->SetSymbolPath("C:\\Users\\grigo\\Desktop\\vscode-mock-debug\\sampleWorkspace");
+    std::string programDirectory = std::filesystem::path(program).parent_path().string();
+    hr = debugSymbols->SetSymbolPath(programDirectory.c_str());
     hr = debugSymbols->Reload("/f /i");
     // hr = debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "l-t", DEBUG_EXECUTE_DEFAULT);
 
@@ -326,7 +328,7 @@ void Debugger::setBreakpoints(const std::string &sourceFile, const std::vector<d
         }
         else
         {
-            printf("GetOffsetByLine failed for line %d: 0x%08X\n", static_cast<int>(line), hr);
+            // printf("GetOffsetByLine failed for line %d: 0x%08X\n", static_cast<int>(line), hr);
         }
     }
 }
@@ -412,10 +414,11 @@ std::vector<dap::StackFrame> Debugger::getCallStack()
             ULONG line = 0;
             char fileName[MAX_PATH] = {};
 
+            frame.name = dap::string(funcName);
+
             hr = debugSymbols->GetLineByOffset(frames[i].InstructionOffset, &line, fileName, sizeof(fileName), nullptr, nullptr);
             if (SUCCEEDED(hr))
             {
-                frame.name = dap::string(funcName);
                 frame.line = line;
                 frame.column = 1;
                 frame.source = dap::Source();
@@ -486,31 +489,42 @@ void Debugger::eventLoop()
                         ULONG processId, threadId;
                         char description[256];
                         ULONG descriptionUsed;
+                        EXCEPTION_RECORD64 exceptionRecord;
 
                         hr = debugControl->GetLastEventInformation(
                             &eventType, &processId, &threadId,
-                            nullptr, 0, nullptr,
+                            &exceptionRecord, sizeof(exceptionRecord), nullptr,
                             description, sizeof(description), &descriptionUsed);
 
                         if (SUCCEEDED(hr))
                         {
                             if (eventType == DEBUG_EVENT_EXCEPTION)
                             {
-                                printf("Break reason: Exception\n");
-                                printf("Description: %s\n", description);
-                                hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
-                                isStopped = false;
+                                // printf("Break reason: Exception\n");
+                                // printf("Description: %s\n", description);
+                                // STATUS_WX86_BREAKPOINT
+                                if (exceptionRecord.ExceptionCode == 0x4000001F)
+                                {
+                                    hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
+                                    isStopped = false;
+                                }
+                                else
+                                {
+                                    onEvent(EventType::Exception);
+                                    isStopped = true;
+                                }
                             }
                             else if (eventType == DEBUG_EVENT_BREAKPOINT)
                             {
-                                printf("Break reason: Breakpoint\n");
-                                printf("%s\n", description);
+                                // printf("Break reason: Breakpoint\n");
+                                // printf("%s\n", description);
                                 onEvent(EventType::BreakpointHit);
                                 lastLineBreak = getCurrentLineNumber();
                             }
                             else if (eventType == DEBUG_EVENT_EXIT_PROCESS)
                             {
                                 onEvent(EventType::Exited);
+                                break;
                             }
                             else
                             {
@@ -523,7 +537,7 @@ void Debugger::eventLoop()
                                 }
                                 else
                                 {
-                                    printf("%s\n", description);
+                                    // printf("%s\n", description);
                                     onEvent(EventType::Stepped);
                                     isStopped = true;
                                     lastLineBreak = currentLineNumber;
@@ -548,7 +562,7 @@ void Debugger::eventLoop()
                 else if (FAILED(hr))
                 {
                     // Error occurred
-                    printf("WaitForEvent failed: 0x%08X\n", hr);
+                    // printf("WaitForEvent failed: 0x%08X\n", hr);
                     break;
                 }
             }

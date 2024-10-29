@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fcntl.h> // _O_BINARY
 #include <io.h>    // _setmode
+#include <fstream>
 
 #define USE_SERVER_MODE
 #define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt"
@@ -98,6 +99,8 @@ int main(int, char *[])
             }
             case Debugger::EventType::Exited:
             {
+                dap::TerminatedEvent terminatedEvent;
+                session->send(terminatedEvent);
                 dap::ExitedEvent exitedEvent;
                 session->send(exitedEvent);
 
@@ -107,6 +110,15 @@ int main(int, char *[])
                 }
                 state.cv.notify_one();
                 break;
+            }
+            case Debugger::EventType::Exception:
+            {
+                dap::StoppedEvent stoppedEvent;
+                stoppedEvent.threadId = 1; // Adjust the thread ID as appropriate
+                stoppedEvent.reason = "exception";
+                stoppedEvent.description = "An exception occurred";
+                stoppedEvent.allThreadsStopped = true; // If all threads are stopped
+                session->send(stoppedEvent);
             }
             }
         };
@@ -132,12 +144,6 @@ int main(int, char *[])
                 std::cout << "Exit InitializeRequest\n" << std::endl;
                 return response; });
 
-        session->registerSentHandler([&](const dap::ResponseOrError<dap::InitializeResponse> &)
-                                     {
-                std::cout << "Enter InitializeResponse" << std::endl;
-                std::cout << "Exit InitializeResponse\n" << std::endl;
-                session->send(dap::InitializedEvent()); });
-
         session->registerHandler([&](const dap::MyLaunchRequest &request)
                                  {
                 std::cout << "Enter LaunchRequest" << std::endl;
@@ -158,6 +164,7 @@ int main(int, char *[])
 
                 // Wait for the debugger to initialize
                 debugger->waitForInitialization();
+                session->send(dap::InitializedEvent());
 
                 return dap::LaunchResponse(); });
 
@@ -361,17 +368,34 @@ int main()
         switch (event)
         {
         case Debugger::EventType::BreakpointHit:
-        case Debugger::EventType::Stepped:
-        case Debugger::EventType::Paused:
         {
             dap::StoppedEvent stoppedEvent;
             stoppedEvent.threadId = 1;
             stoppedEvent.reason = "breakpoint";
+            std::cout << "Sent breakpoint hit event" << std::endl;
+            session->send(stoppedEvent);
+            break;
+        }
+        case Debugger::EventType::Stepped:
+        {
+            dap::StoppedEvent stoppedEvent;
+            stoppedEvent.threadId = 1;
+            stoppedEvent.reason = "step";
+            session->send(stoppedEvent);
+            break;
+        }
+        case Debugger::EventType::Paused:
+        {
+            dap::StoppedEvent stoppedEvent;
+            stoppedEvent.threadId = 1;
+            stoppedEvent.reason = "pause";
             session->send(stoppedEvent);
             break;
         }
         case Debugger::EventType::Exited:
         {
+            dap::TerminatedEvent terminatedEvent;
+            session->send(terminatedEvent);
             dap::ExitedEvent exitedEvent;
             session->send(exitedEvent);
 
@@ -379,8 +403,17 @@ int main()
                 std::lock_guard<std::mutex> lock(state.mutex);
                 state.terminate = true;
             }
-            state.cv.notify_one();
+            state.cv.notify_all();
             break;
+        }
+        case Debugger::EventType::Exception:
+        {
+            dap::StoppedEvent stoppedEvent;
+            stoppedEvent.threadId = 1; // Adjust the thread ID as appropriate
+            stoppedEvent.reason = "exception";
+            stoppedEvent.description = "An exception occurred";
+            stoppedEvent.allThreadsStopped = true; // If all threads are stopped
+            session->send(stoppedEvent);
         }
         }
     };
@@ -400,14 +433,12 @@ int main()
                 // std::cout << "Enter InitializeRequest" << std::endl;
                 dap::InitializeResponse response;
                 response.supportsConfigurationDoneRequest = true;
+
+                // Create the Debugger instance
+                debugger = std::make_shared<Debugger>(debuggerEventHandler);
+
                 // std::cout << "Exit InitializeRequest\n" << std::endl;
                 return response; });
-
-    session->registerSentHandler([&](const dap::ResponseOrError<dap::InitializeResponse> &)
-                                 {
-                // std::cout << "Enter InitializeResponse" << std::endl;
-                // std::cout << "Exit InitializeResponse\n" << std::endl;
-                session->send(dap::InitializedEvent()); });
 
     session->registerHandler([&](const dap::MyLaunchRequest &request)
                              {
@@ -421,17 +452,15 @@ int main()
                     }
                 }
 
-                // Create the Debugger instance
-                debugger = std::make_shared<Debugger>(debuggerEventHandler);
-
                 // Start the debugger in a new thread
                 std::thread([debugger, program, args]() {
                     debugger->launch(program, args);
-                    debugger->eventLoop();
+                    debugger->eventLoop(); 
                 }).detach();
 
                 // Wait for the debugger to initialize
-                // debugger->getInitializationFuture().wait();
+                debugger->waitForInitialization();
+                session->send(dap::InitializedEvent());
 
                 // std::cout << "Exit InitializeRequest\n" << std::endl;
                 return dap::LaunchResponse(); });
@@ -582,6 +611,10 @@ int main()
                 // std::cout << "Exit DisconnectRequest\n" << std::endl;
                 return dap::DisconnectResponse(); });
 
+    std::ofstream errorFile("C:\\Users\\grigo\\Documents\\masm\\error_log.txt", std::ios::out | std::ios::app);
+    // Redirect std::cerr to the file
+    std::cerr.rdbuf(errorFile.rdbuf());
+
     std::shared_ptr<dap::Reader> in = dap::file(stdin, false);
     std::shared_ptr<dap::Writer> out = dap::file(stdout, false);
     if (log)
@@ -596,7 +629,7 @@ int main()
     std::unique_lock<std::mutex> lock(state.mutex);
     state.cv.wait(lock, [&]
                   { return state.terminate; });
-    // printf("Server closing connection\n");
+    printf("Closing session\n");
 }
 
 #endif
