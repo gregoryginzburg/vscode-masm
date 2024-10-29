@@ -17,7 +17,7 @@
 #include <fcntl.h> // _O_BINARY
 #include <io.h>    // _setmode
 
-// #define USE_SERVER_MODE
+#define USE_SERVER_MODE
 #define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt"
 
 namespace dap

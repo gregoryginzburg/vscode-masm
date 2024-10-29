@@ -207,7 +207,7 @@ function activate(context) {
       program: executablePath,
       args: [],
       stopOnEntry: true,
-      // debugServer: 19021,
+      debugServer: 19021,
       // preLaunchTask: "Link"
     }).then(
       success => {
