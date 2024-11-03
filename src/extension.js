@@ -183,7 +183,9 @@ function activate(context) {
   }
   function executeExternalConsole(executablePath) {
     // Use child_process to open a new command prompt and run the executable
-    const command = `start cmd.exe /C "${executablePath} & echo. & echo. & echo ------------------ & echo (program exited with code: %ERRORLEVEL%) & <nul set /p=Press any key to close this window . . . & pause >nul"`;
+    const command = `start cmd.exe /V:ON /C "${executablePath} & echo. & echo. & echo ------------------ & echo (program exited with code: !ERRORLEVEL!) & <nul set /p=Press any key to close this window . . . & pause >nul"`;
+
+
     exec(command, (error, stdout, stderr) => {
       if (error) {
         vscode.window.showErrorMessage(`Error running executable: ${error.message}`);

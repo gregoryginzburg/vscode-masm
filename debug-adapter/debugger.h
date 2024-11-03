@@ -11,31 +11,24 @@
 #include "dap/protocol.h"
 #include "event.h"
 
-class Debugger
-{
+class Debugger {
 public:
-    enum class EventType
-    {
-        BreakpointHit,
-        Stepped,
-        Paused,
-        Exited,
-        Exception
-    };
+    enum class EventType { BreakpointHit, Stepped, Paused, Exited, Exception };
 
     using EventHandler = std::function<void(EventType)>;
 
-    Debugger(const EventHandler& handler);
+    Debugger(const EventHandler &handler);
     ~Debugger();
 
-    void launch(const std::string& program, const std::string& args);
+    void launch(const std::string &program, const std::string &args);
     void configurationDone();
     void run();
     void pause();
     void stepOver();
     void stepInto();
     void stepOut();
-    void setBreakpoints(const std::string& sourceFile, const std::vector<dap::integer>& lines);
+    void setBreakpoints(const std::string &sourceFile, const std::vector<dap::integer> &lines);
+    void selectApplicationThread();
     std::vector<std::string> getRegisters();
     std::vector<dap::StackFrame> getCallStack();
     void exit();
@@ -52,21 +45,21 @@ private:
     std::mutex debugMutex;
     Event hasExited;
     Event hasInitialized;
+    Event needToWaitForEvent;
     // Event configurationDoneEvent;
     bool isStopped = true;
     bool shouldExit = false;
     int lastLineBreak = -1;
 
-
     // Debugger interfaces
-    IDebugClient* debugClient = nullptr;
-    IDebugControl* debugControl = nullptr;
-    IDebugSymbols* debugSymbols = nullptr;
-    IDebugRegisters* debugRegisters = nullptr;
-    IDebugSystemObjects* debugSystemObjects = nullptr;
+    IDebugClient *debugClient = nullptr;
+    IDebugControl *debugControl = nullptr;
+    IDebugSymbols *debugSymbols = nullptr;
+    IDebugRegisters *debugRegisters = nullptr;
+    IDebugSystemObjects *debugSystemObjects = nullptr;
 
     // Breakpoints
-    std::unordered_map<ULONG64, IDebugBreakpoint*> breakpoints;
+    std::unordered_map<ULONG64, IDebugBreakpoint *> breakpoints;
 
     // Other variables
     EventHandler onEvent;

@@ -1,0 +1,43 @@
+# Docs: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+Language: Cpp
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+
+
+# When set to false, prevents packing of function parameters and arguments into a single line.
+# BinPackParameters: false
+# BinPackArguments: false
+
+# This can be set to None to prevent all functions from being formatted on a single line, regardless of their length.
+# AllowShortFunctionsOnASingleLine: None
+# Setting this to true allows placing all arguments on the next line if they don't fit in one line.
+# AllowAllArgumentsOnNextLine: true
+
+IndentPPDirectives: AfterHash
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel:  false
+  AfterClass:      false
+  AfterControlStatement: false # Changed this to make if, for and while have opening brace on the same line
+  AfterEnum:       false
+  AfterFunction:   true      # Ensures the opening brace of a function is on a new line
+  AfterNamespace:  false      # Changed this to make namespace braces appear on the same line
+  AfterObjCDeclaration: false
+  AfterStruct:     false
+  AfterUnion:      false
+  AfterExternBlock: true
+  BeforeCatch:     false
+  BeforeElse:      false
+  IndentBraces:    false
+
+SortIncludes: false
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: false
+ColumnLimit: 120
+AccessModifierOffset: -4
+NamespaceIndentation: None
+FixNamespaceComments: false

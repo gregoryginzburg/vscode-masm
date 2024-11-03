@@ -87,6 +87,7 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "any": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "filesystem": "cpp"
     }
 }

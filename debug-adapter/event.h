@@ -11,9 +11,10 @@ public:
     // fire() signals the event, and unblocks any calls to wait().
     void fire();
 
+    void reset();
+
 private:
     std::mutex mutex;
     std::condition_variable cv;
     bool fired = false;
 };
-
