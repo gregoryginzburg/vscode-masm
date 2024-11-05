@@ -62,7 +62,7 @@
             "patterns": [
                 {
                     "name": "keyword.instruction.masm",
-                    "match": "(?i)\\b(mov|add|sub|mul|div|jmp|cmp|push|pop|call|ret|inc|dec|and|or|xor|shl|shr|offset)\\b"
+                    "match": "(?i)\\b(mov|add|sub|mul|div|jmp|cmp|push|pop|call|ret|inc|dec|and|or|xor|shl|shr|jge|neg|offset)\\b"
                 }
             ]
         },

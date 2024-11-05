@@ -60,7 +60,7 @@ int main(int, char *[])
         std::shared_ptr<Debugger> debugger;
 
         // Event handler for Debugger events
-        auto debuggerEventHandler = [&session, &state](Debugger::EventType event) {
+        auto debuggerEventHandler = [&session, &state, &debugger](Debugger::EventType event) {
             switch (event) {
             case Debugger::EventType::BreakpointHit: {
                 dap::StoppedEvent stoppedEvent;
@@ -99,10 +99,10 @@ int main(int, char *[])
             }
             case Debugger::EventType::Exception: {
                 dap::StoppedEvent stoppedEvent;
-                stoppedEvent.threadId = 1; // Adjust the thread ID as appropriate
+                stoppedEvent.threadId = 1;
                 stoppedEvent.reason = "exception";
-                stoppedEvent.description = "An exception occurred";
-                stoppedEvent.allThreadsStopped = true; // If all threads are stopped
+                stoppedEvent.description = debugger->lastExceptionInfo.description;
+                stoppedEvent.allThreadsStopped = true;
                 session->send(stoppedEvent);
             }
             }
@@ -122,6 +122,8 @@ int main(int, char *[])
             std::cout << "Enter InitializeRequest" << std::endl;
             dap::InitializeResponse response;
             response.supportsConfigurationDoneRequest = true;
+            response.supportsEvaluateForHovers = true;
+            response.supportsExceptionInfoRequest = true;
             // Create the Debugger instance
             debugger = std::make_shared<Debugger>(debuggerEventHandler);
 
@@ -206,40 +208,116 @@ int main(int, char *[])
         session->registerHandler([&](const dap::ScopesRequest &) {
             std::cout << "Enter ScopesRequest" << std::endl;
             dap::ScopesResponse response;
-            dap::Scope scope;
-            scope.name = "Registers";
-            scope.variablesReference = 1;
-            scope.presentationHint = "registers";
-            response.scopes.push_back(scope);
+
+            dap::Scope registersScope;
+            registersScope.name = "Registers";
+            registersScope.variablesReference = 1;
+            registersScope.presentationHint = "registers";
+            response.scopes.push_back(registersScope);
+
+            dap::Scope stackScope;
+            stackScope.name = "Stack";
+            stackScope.variablesReference = 2;
+            stackScope.presentationHint = "locals";
+            response.scopes.push_back(stackScope);
             std::cout << "Exit ScopesRequest\n" << std::endl;
             return response;
         });
 
-        session->registerHandler([&](const dap::VariablesRequest &) {
+        session->registerHandler([&](const dap::VariablesRequest &request) {
             std::cout << "Enter VariablesRequest" << std::endl;
             dap::VariablesResponse response;
             if (debugger) {
-                auto regs = debugger->getRegisters();
-                for (const auto &reg : regs) {
-                    dap::Variable var;
-                    size_t eqPos = reg.find('=');
-                    if (eqPos != std::string::npos) {
-                        var.name = reg.substr(0, eqPos - 1);
-                        var.value = reg.substr(eqPos + 2);
-                    } else {
-                        var.name = reg;
-                        var.value = "<unknown>";
+                if (request.variablesReference == 1) { // Registers
+                    auto regs = debugger->getRegisters();
+                    for (const auto &reg : regs) {
+                        dap::Variable var;
+                        size_t eqPos = reg.find('=');
+                        if (eqPos != std::string::npos) {
+                            var.name = reg.substr(0, eqPos - 1);
+                            var.value = reg.substr(eqPos + 2);
+                        } else {
+                            var.name = reg;
+                            var.value = "<unknown>";
+                        }
+                        dap::VariablePresentationHint hint;
+                        hint.attributes = dap::array<dap::string>{"readOnly"};
+                        hint.kind = "property";
+                        var.presentationHint = hint;
+                        response.variables.push_back(var);
                     }
+                    dap::Variable var;
+                    var.name = "EFLAGS";
+                    var.variablesReference = 3;
+                    dap::VariablePresentationHint hint;
+                    hint.attributes = dap::array<dap::string>{"readOnly"};
+                    hint.kind = "property";
+                    var.presentationHint = hint;
                     response.variables.push_back(var);
+                } else if (request.variablesReference == 2) { // Stack
+                    auto stackContents = debugger->getStackContents();
+                    for (const auto &entry : stackContents) {
+                        dap::Variable var;
+                        var.name = entry.address;
+                        var.value = entry.value;
+                        dap::VariablePresentationHint hint;
+                        hint.attributes = dap::array<dap::string>{"readOnly"};
+                        hint.kind = "method";
+                        var.presentationHint = hint;
+                        response.variables.push_back(var);
+                    }
+                } else if (request.variablesReference == 3) { // EFLAGS
+                    auto eflags = debugger->getEflags();
+                    for (const auto &flag : eflags) {
+                        dap::Variable var;
+                        var.name = flag.first;
+                        var.value = flag.second;
+                        dap::VariablePresentationHint hint;
+                        hint.attributes = dap::array<dap::string>{"readOnly"};
+                        hint.kind = "property";
+                        var.presentationHint = hint;
+                        response.variables.push_back(var);
+                    }
                 }
             }
             std::cout << "Exit VariablesRequest\n" << std::endl;
             return response;
         });
+
         session->registerHandler([&](const dap::EvaluateRequest &request) {
             std::cout << "Enter evaluate request: " << request.context.value("") << std::endl;
-            std::cout << request.expression << std::endl;
-            return dap::EvaluateResponse();
+            dap::ResponseOrError<dap::EvaluateResponse> response;
+            std::string expr = request.expression;
+            std::string context = request.context.value("");
+
+            if (context == "hover") {
+                std::string value = debugger->evaluateVariable(expr);
+                if (!value.empty()) {
+                    response.response.result = value;
+                } else {
+                    response.error = "Don't send a response to avoid empty box";
+                }
+                return response;
+            } else if (context == "watch" || context == "repl") {
+                // For watch and repl, evaluate the expression normally
+                std::string value = debugger->evaluateExpression(expr);
+                response.response.result = value;
+            } else {
+                response.response.result = "<Unsupported context>";
+            }
+            return response;
+        });
+
+        session->registerHandler([&](const dap::ExceptionInfoRequest &request) {
+            dap::ExceptionInfoResponse response;
+            if (debugger) {
+                auto exceptionInfo = debugger->getExceptionInfo(request.threadId);
+                response.exceptionId = exceptionInfo.exceptionId;
+                response.description = exceptionInfo.description;
+                response.breakMode = exceptionInfo.breakMode;
+                response.details = exceptionInfo.details;
+            }
+            return response;
         });
 
         session->registerHandler([&](const dap::ContinueRequest &) {

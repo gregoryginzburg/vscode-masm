@@ -28,7 +28,9 @@ const instructions = [
     { name: 'CALL', detail: 'Call Procedure', documentation: 'Calls a procedure.' },
     { name: 'RET', detail: 'Return', documentation: 'Returns from a procedure.' },
     { name: 'PUSH', detail: 'Push onto Stack', documentation: 'Pushes operand onto the stack.' },
-    { name: 'POP', detail: 'Pop from Stack', documentation: 'Pops operand from the stack.' }
+    { name: 'POP', detail: 'Pop from Stack', documentation: 'Pops operand from the stack.' },
+    { name: 'JGE', detail: 'Jump if Greater or Equal', documentation: 'Jump if the destination is greater than or equal to the source.' },
+    { name: 'NEG', detail: 'Negate', documentation: 'Negates the operand (two’s complement).'}
 ];
 
 const registers = [

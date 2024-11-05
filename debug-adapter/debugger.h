@@ -1,19 +1,33 @@
+// debugger.h
+
 #pragma once
 
 #include <windows.h>
 #include <dbgeng.h>
-#include <functional>
-#include <vector>
 #include <string>
+#include <vector>
 #include <mutex>
-#include <condition_variable>
+#include <functional>
 #include <unordered_map>
 #include "dap/protocol.h"
 #include "event.h"
+#include <map>
 
 class Debugger {
 public:
     enum class EventType { BreakpointHit, Stepped, Paused, Exited, Exception };
+
+    struct StackEntry {
+        std::string address;
+        std::string value;
+    };
+
+    struct ExceptionInfo {
+        std::string exceptionId;
+        std::string description;
+        std::string breakMode; // Typically 'always', 'unhandled', or 'userUnhandled'
+        dap::ExceptionDetails details;
+    };
 
     using EventHandler = std::function<void(EventType)>;
 
@@ -21,6 +35,7 @@ public:
     ~Debugger();
 
     void launch(const std::string &program, const std::string &args);
+    void waitForInitialization();
     void configurationDone();
     void run();
     void pause();
@@ -28,39 +43,87 @@ public:
     void stepInto();
     void stepOut();
     void setBreakpoints(const std::string &sourceFile, const std::vector<dap::integer> &lines);
-    void selectApplicationThread();
     std::vector<std::string> getRegisters();
+    std::vector<StackEntry> getStackContents();
     std::vector<dap::StackFrame> getCallStack();
+    std::string evaluateExpression(const std::string &expression);
+    std::string evaluateVariable(const std::string &variableName);
+    std::map<std::string, std::string> getEflags();
+    ExceptionInfo getExceptionInfo(dap::integer threadId);
+    ExceptionInfo lastExceptionInfo;
     void exit();
     void eventLoop();
-    void waitForInitialization();
-    // void waitForConfigurationDone();
 
 private:
     void initialize();
     void uninitialize();
     int getCurrentLineNumber();
+    void selectApplicationThread();
 
-    // Synchronization primitives
-    std::mutex debugMutex;
-    Event hasExited;
-    Event hasInitialized;
-    Event needToWaitForEvent;
-    // Event configurationDoneEvent;
-    bool isStopped = true;
-    bool shouldExit = false;
-    int lastLineBreak = -1;
+    // Event callback class
+    class MyDebugEventCallbacks : public DebugBaseEventCallbacks {
+    public:
+        MyDebugEventCallbacks(Debugger *dbg, IDebugControl3 *debugControl);
+        virtual ~MyDebugEventCallbacks() {}
 
-    // Debugger interfaces
+        // IUnknown methods
+        STDMETHOD(QueryInterface)(REFIID InterfaceId, PVOID *Interface);
+        STDMETHOD_(ULONG, AddRef)();
+        STDMETHOD_(ULONG, Release)();
+
+        // IDebugEventCallbacks methods
+        STDMETHOD(GetInterestMask)(PULONG Mask);
+        STDMETHOD(Breakpoint)(PDEBUG_BREAKPOINT Bp);
+        STDMETHOD(Exception)(PEXCEPTION_RECORD64 Exception, ULONG FirstChance);
+        STDMETHOD(ExitProcess)(ULONG ExitCode);
+
+        // Other event methods returning DEBUG_STATUS_NO_CHANGE
+        STDMETHOD(CreateThread)(ULONG64 Handle, ULONG64 DataOffset, ULONG64 StartOffset);
+        STDMETHOD(ExitThread)(ULONG ExitCode);
+        STDMETHOD(LoadModule)
+        (ULONG64 ImageFileHandle, ULONG64 BaseOffset, ULONG ModuleSize, PCSTR ModuleName, PCSTR ImageName,
+         ULONG CheckSum, ULONG TimeDateStamp);
+        STDMETHOD(UnloadModule)(PCSTR ImageBaseName, ULONG64 BaseOffset);
+        STDMETHOD(SystemError)(ULONG Error, ULONG Level);
+        STDMETHOD(SessionStatus)(ULONG Status);
+        STDMETHOD(ChangeDebuggeeState)(ULONG Flags, ULONG64 Argument);
+        STDMETHOD(ChangeEngineState)(ULONG Flags, ULONG64 Argument);
+        STDMETHOD(ChangeSymbolState)(ULONG Flags, ULONG64 Argument);
+        STDMETHOD(CreateProcess)
+        (ULONG64 ImageFileHandle, ULONG64 Handle, ULONG64 BaseOffset, ULONG ModuleSize, PCSTR ModuleName,
+         PCSTR ImageName, ULONG CheckSum, ULONG TimeDateStamp, ULONG64 InitialThreadHandle, ULONG64 ThreadDataOffset,
+         ULONG64 StartOffset);
+
+    private:
+        bool first = true;
+        ULONG m_refCount;
+        Debugger *debugger;
+        IDebugControl3 *debugControl = nullptr;
+    };
+
+    // COM interfaces
     IDebugClient *debugClient = nullptr;
-    IDebugControl *debugControl = nullptr;
+    IDebugControl3 *debugControl = nullptr;
     IDebugSymbols *debugSymbols = nullptr;
     IDebugRegisters *debugRegisters = nullptr;
     IDebugSystemObjects *debugSystemObjects = nullptr;
+    IDebugDataSpaces *debugDataSpaces = nullptr;
+    MyDebugEventCallbacks *eventCallbacks = nullptr;
 
-    // Breakpoints
     std::unordered_map<ULONG64, IDebugBreakpoint *> breakpoints;
+    std::mutex debugMutex;
 
-    // Other variables
+    // Event signaling
+    Event hasInitialized;
+    Event hasExited;
+    Event waitForEvent;
+    int eventsHandledCnt = 0;
+
+    int lastLineBreak = -1;
+
+    // Event handler
     EventHandler onEvent;
+
+    // Flags
+    bool shouldExit;
 };
