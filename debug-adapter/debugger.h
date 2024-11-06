@@ -95,7 +95,8 @@ private:
          ULONG64 StartOffset);
 
     private:
-        bool first = true;
+        bool first1 = true;
+        bool first2 = true;
         ULONG m_refCount;
         Debugger *debugger;
         IDebugControl3 *debugControl = nullptr;

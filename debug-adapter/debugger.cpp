@@ -454,22 +454,13 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
         return stackContents;
     }
 
-    const int numEntries = 16;
     ULONG64 address = sp;
-    ULONG bytesRead = 0;
-    ULONG32 stackData[numEntries];
-
-    hr = debugDataSpaces->ReadVirtual(address, stackData, sizeof(stackData), &bytesRead);
-    if (FAILED(hr)) {
-        printf("ReadVirtual failed: 0x%08X\n", hr);
-        return stackContents;
-    }
-
     // stack unwinding to get all return addresses (EIP values)
     std::vector<ULONG64> ebpArray;
     std::vector<ULONG64> eipArray;
     DEBUG_STACK_FRAME frames[100];
     ULONG filled = 0;
+    ULONG64 firstFrameAddress;
     hr = debugControl->GetStackTrace(0, 0, 0, frames, 100, &filled);
 
     for (ULONG i = 0; i < filled; ++i) {
@@ -477,6 +468,31 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
         if (frames[i].ReturnOffset != 0) {
             eipArray.push_back(frames[i].ReturnOffset); // Collect EIP
         }
+        char symbolBuffer[1024] = {0};
+        ULONG64 displacement = 0;
+        hr = debugSymbols->GetNameByOffset(frames[i].InstructionOffset, symbolBuffer, sizeof(symbolBuffer), NULL,
+                                           &displacement);
+
+        std::string symbolName(symbolBuffer);
+
+        if (symbolName.find("start") != std::string::npos) {
+            firstFrameAddress = frames[i].FrameOffset;
+            break;
+        }
+        // if there's no start function - show all stack
+        firstFrameAddress = frames[i].FrameOffset;
+    }
+
+    ULONG64 numEntries = (firstFrameAddress - address) / sizeof(ULONG32) + 2;
+
+    ULONG bytesRead = 0;
+    std::vector<ULONG32> stackData{};
+    stackData.resize(numEntries);
+
+    hr = debugDataSpaces->ReadVirtual(address, stackData.data(), stackData.size() * sizeof(ULONG32), &bytesRead);
+    if (FAILED(hr)) {
+        printf("ReadVirtual failed: 0x%08X\n", hr);
+        return stackContents;
     }
 
     for (int i = 0; i < numEntries; ++i) {
@@ -493,11 +509,9 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
             sprintf_s(addrStr, "Argument/Local Var   -> 0x%llx", address + i * sizeof(ULONG32));
         }
 
-
         // Format value
         char valStr[128];
         sprintf_s(valStr, "0x%08x", stackData[i]);
-        
 
         // Try to get the symbol name for the value
         char symbolName[256];
@@ -505,12 +519,11 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
         hr = debugSymbols->GetNameByOffset(stackData[i], symbolName, sizeof(symbolName), nullptr, &displacement);
 
         if (SUCCEEDED(hr)) {
-            sprintf_s(valStr + strlen(valStr), sizeof(valStr) - strlen(valStr), " | Symbol %s+0x%llx",
-                      symbolName, displacement);
+            sprintf_s(valStr + strlen(valStr), sizeof(valStr) - strlen(valStr), " | Symbol %s+0x%llx", symbolName,
+                      displacement);
         }
         entry.value = valStr;
         entry.address = addrStr;
-
 
         stackContents.push_back(entry);
     }
@@ -842,12 +855,17 @@ STDMETHODIMP Debugger::MyDebugEventCallbacks::Exception(PEXCEPTION_RECORD64 Exce
     debugger->lastExceptionInfo.exceptionId = std::to_string(Exception->ExceptionCode);
     debugger->lastExceptionInfo.description = description;
     if (Exception->ExceptionCode == DBG_CONTROL_C || Exception->ExceptionCode == STATUS_BREAKPOINT) {
-        if (first) {
-            first = false;
+        if (first1) {
+            first1 = false;
         } else {
             debugger->onEvent(EventType::Paused);
         }
     } else if (Exception->ExceptionCode == STATUS_WX86_BREAKPOINT) {
+        if (first2) {
+            first2 = false;
+        } else {
+            debugger->onEvent(EventType::Exception);
+        }
     } else {
         debugger->onEvent(EventType::Exception);
     }
