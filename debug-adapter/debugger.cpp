@@ -92,14 +92,14 @@ void Debugger::uninitialize()
     }
 
     // Clear previous breakpoints
-    for (auto &bp : breakpoints) {
-        if (bp.second) {
-            HRESULT hr = debugControl->RemoveBreakpoint(bp.second);
-            if (FAILED(hr)) {
-                printf("IDebugControl3::RemoveBreakpoint failed: 0x%08X\n", hr);
-            }
-        }
-    }
+    // for (auto &bp : breakpoints) {
+    //     if (bp.second) {
+    //         HRESULT hr = debugControl->RemoveBreakpoint(bp.second);
+    //         if (FAILED(hr)) {
+    //             printf("IDebugControl3::RemoveBreakpoint failed: 0x%08X\n", hr);
+    //         }
+    //     }
+    // }
     breakpoints.clear();
 
     if (debugDataSpaces) {
@@ -460,7 +460,7 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
     std::vector<ULONG64> eipArray;
     DEBUG_STACK_FRAME frames[100];
     ULONG filled = 0;
-    ULONG64 firstFrameAddress;
+    ULONG64 firstFrameAddress = 0;
     hr = debugControl->GetStackTrace(0, 0, 0, frames, 100, &filled);
 
     for (ULONG i = 0; i < filled; ++i) {
@@ -483,7 +483,12 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
         firstFrameAddress = frames[i].FrameOffset;
     }
 
-    ULONG64 numEntries = (firstFrameAddress - address) / sizeof(ULONG32) + 2;
+    ULONG64 numEntries;
+    if (firstFrameAddress < address) {
+        numEntries = 1;
+    } else {
+        numEntries = (firstFrameAddress - address) / sizeof(ULONG32) + 2;
+    }
 
     ULONG bytesRead = 0;
     std::vector<ULONG32> stackData{};
@@ -502,11 +507,11 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
 
         // Determine the base annotation for the address based on known stack structure
         if (std::find(ebpArray.begin(), ebpArray.end(), currentAddress) != ebpArray.end()) {
-            sprintf_s(addrStr, "Saved EBP            -> 0x%llx", address + i * sizeof(ULONG32));
+            sprintf_s(addrStr, "Saved EBP            -> 0x%08x", address + i * sizeof(ULONG32));
         } else if (std::find(eipArray.begin(), eipArray.end(), stackData[i]) != eipArray.end()) {
-            sprintf_s(addrStr, "Return Address (EIP) -> 0x%llx", address + i * sizeof(ULONG32));
+            sprintf_s(addrStr, "Return Address (EIP) -> 0x%08x", address + i * sizeof(ULONG32));
         } else {
-            sprintf_s(addrStr, "Argument/Local Var   -> 0x%llx", address + i * sizeof(ULONG32));
+            sprintf_s(addrStr, "Argument/Local Var   -> 0x%08x", address + i * sizeof(ULONG32));
         }
 
         // Format value
@@ -631,7 +636,7 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
     if (SUCCEEDED(hr)) {
         // Add the address to the result string
         char addressStr[64];
-        sprintf_s(addressStr, "Address: 0x%llx", offset);
+        sprintf_s(addressStr, "Address: 0x%08x", offset);
         result += addressStr;
 
         // Determine the type size
@@ -651,16 +656,16 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
 
             if (typeSize == sizeof(uint64_t)) {
                 uint64_t value = *reinterpret_cast<uint64_t *>(buffer.data());
-                sprintf_s(valueStr, "Value: 0x%llx", value);
+                sprintf_s(valueStr, "Value: 0x%16x", value);
             } else if (typeSize == sizeof(uint32_t)) {
                 uint32_t value = *reinterpret_cast<uint32_t *>(buffer.data());
-                sprintf_s(valueStr, "Value: 0x%lx", value);
+                sprintf_s(valueStr, "Value: 0x%08x", value);
             } else if (typeSize == sizeof(uint16_t)) {
                 uint16_t value = *reinterpret_cast<uint16_t *>(buffer.data());
-                sprintf_s(valueStr, "Value: 0x%x", value);
+                sprintf_s(valueStr, "Value: 0x%04x", value);
             } else if (typeSize == sizeof(uint8_t)) {
                 uint8_t value = *reinterpret_cast<uint8_t *>(buffer.data());
-                sprintf_s(valueStr, "Value: 0x%x", value);
+                sprintf_s(valueStr, "Value: 0x%02x", value);
             } else {
                 sprintf_s(valueStr, "Value: <unsupported type size>");
             }
@@ -747,6 +752,7 @@ void Debugger::exit()
             debugControl->SetInterrupt(DEBUG_INTERRUPT_ACTIVE);
         }
     }
+    
 }
 
 void Debugger::eventLoop()
@@ -755,6 +761,11 @@ void Debugger::eventLoop()
     while (!shouldExit) {
         waitForEvent.wait();
         waitForEvent.reset();
+
+        // if the debugger is already stopped WaitForEvent will wait for the next event
+        if (shouldExit) {
+            break;
+        }
 
         hr = debugControl->WaitForEvent(0, INFINITE);
         ULONG eventType;

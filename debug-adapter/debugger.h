@@ -126,5 +126,5 @@ private:
     EventHandler onEvent;
 
     // Flags
-    bool shouldExit;
+    bool shouldExit = false;
 };

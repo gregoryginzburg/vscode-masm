@@ -369,10 +369,9 @@ int main(int, char *[])
 
         session->registerHandler([&](const dap::DisconnectRequest &) {
             std::cout << "Enter DisconnectRequest" << std::endl;
-            if (debugger) {
-                debugger->exit();
-            }
             // Signal termination
+
+            debugger->exit();
             {
                 std::lock_guard<std::mutex> lock(state.mutex);
                 state.terminate = true;
@@ -387,6 +386,8 @@ int main(int, char *[])
         // Wait for the client to disconnect before releasing the session and disconnecting the socket
         std::unique_lock<std::mutex> lock(state.mutex);
         state.cv.wait(lock, [&] { return state.terminate; });
+        printf("test1\n");
+        // debugger->~Debugger();
         printf("Server closing connection\n");
     };
 
