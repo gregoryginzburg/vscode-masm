@@ -669,8 +669,7 @@ std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memor
             sprintf_s(buffer, sizeof(buffer), "%d", (int16_t)wordValue);
         } else if (format == 'u') {
             sprintf_s(buffer, sizeof(buffer), "%u", wordValue);
-        }
-        else if (format == 'b') {
+        } else if (format == 'b') {
             std::string binaryStr = std::bitset<16>(wordValue).to_string();
             for (int j = 12; j > 0; j -= 4) { // Group bits into nibbles (4 bits)
                 binaryStr.insert(j, " ");
@@ -777,9 +776,9 @@ std::string Debugger::evaluateExpression(const std::string &expression)
             return "<Invalid expression>";
         }
 
-        if (format == 'c') {
-            return "Char format (c) can't be applied";
-        }
+        // if (format == 'c') {
+        //     return "Char format (c) can't be applied";
+        // }
 
         char buffer[128];
         if (format == 'h') {
@@ -794,6 +793,16 @@ std::string Debugger::evaluateExpression(const std::string &expression)
                 binaryStr.insert(j, " ");
             }
             sprintf_s(buffer, sizeof(buffer), "0b%s", binaryStr.c_str());
+        } else if (format == 'c') {
+            if (value.I8 == value.I32) {
+                if (isprint(value.I8)) {
+                    sprintf_s(buffer, sizeof(buffer), "'%c'", value.I8);
+                } else {
+                    sprintf_s(buffer, sizeof(buffer), "0x%02x", value.I8);
+                }
+            } else {
+                sprintf_s(buffer, sizeof(buffer), "Value is outside of char range");
+            }
         }
         std::string result = "";
         result += buffer;
