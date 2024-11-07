@@ -34,7 +34,7 @@ const instructions = [
 ];
 
 const registers = [
-    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.' },
+    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.\n```masm\nmov eax, ebx\n```' },
     { name: 'EBX', detail: 'Base Register', documentation: 'General-purpose base register.' },
     { name: 'ECX', detail: 'Counter Register', documentation: 'General-purpose counter register.' },
     { name: 'EDX', detail: 'Data Register', documentation: 'General-purpose data register.' },
@@ -138,6 +138,50 @@ function getWordAtPosition(document, position) {
 
     return start === end ? null : text.substring(start, end);
 }
+
+function validateTextDocument(textDocument) {
+    const text = textDocument.getText();
+    const diagnostics = [];
+
+    const lines = text.split(/\r?\n/g);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const index = line.indexOf('error');
+        if (index >= 0) {
+            const diagnostic = {
+                severity: DiagnosticSeverity.Error,
+                range: {
+                    start: { line: i, character: index },
+                    end: { line: i, character: index + 5 }
+                },
+                message: "Mock error: Found the word 'error'",
+                source: 'Mock Linter'
+            };
+            diagnostics.push(diagnostic);
+        }
+    }
+
+    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+}
+
+// Listen for document changes to trigger validation
+documents.onDidChangeContent(change => {
+    validateTextDocument(change.document);
+});
+
+// Also validate documents when they are first opened
+documents.onDidOpen(event => {
+    validateTextDocument(event.document);
+});
+
+// Handle the custom request from the client to run code analysis
+// connection.onRequest('custom/runCodeAnalysis', (params) => {
+//     const uri = params.uri;
+//     const document = documents.get(uri);
+//     if (document) {
+//         validateTextDocument(document);
+//     }
+// });
 
 // Listen to document events
 documents.listen(connection);

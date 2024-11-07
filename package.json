@@ -25,6 +25,10 @@
       {
         "command": "helloworld.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "extension.runCodeAnalysis",
+        "title": "Run Code Analysis"
       }
     ],
     "keybindings": [
@@ -49,6 +53,13 @@
         {
           "command": "extension.debugMasmFile",
           "when": "resourceLangId == masm",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "extension.runCodeAnalysis",
+          "when": "editorLangId == masm",
           "group": "navigation"
         }
       ]

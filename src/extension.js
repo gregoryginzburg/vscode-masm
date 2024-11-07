@@ -224,10 +224,27 @@ function activate(context) {
   }
 
 
+  const runCodeAnalysisCommand = vscode.commands.registerCommand('extension.runCodeAnalysis', () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        vscode.window.showErrorMessage('No active MASM file!');
+        return;
+    }
+
+    if (editor.document.languageId !== 'masm') {
+        vscode.window.showErrorMessage('The current file is not a MASM file!');
+        return;
+    }
+
+    // Send a custom request to the server
+    client.sendRequest('custom/runCodeAnalysis', { uri: editor.document.uri.toString() });
+});
+
   // Add to context subscriptions
   context.subscriptions.push(client);
   context.subscriptions.push(runCommand);
   context.subscriptions.push(debugCommand);
+  context.subscriptions.push(runCodeAnalysisCommand);
 }
 
 function deactivate() {

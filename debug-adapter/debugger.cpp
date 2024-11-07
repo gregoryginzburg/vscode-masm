@@ -11,6 +11,7 @@
 #include <string>
 #include <set>
 #include <regex>
+#include <bitset>
 
 #define STATUS_WX86_BREAKPOINT 0x4000001FL
 #define STATUS_WX86_SINGLE_STEP 0x4000001EL
@@ -507,11 +508,11 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
 
         // Determine the base annotation for the address based on known stack structure
         if (std::find(ebpArray.begin(), ebpArray.end(), currentAddress) != ebpArray.end()) {
-            sprintf_s(addrStr, "Saved EBP            -> 0x%08x", address + i * sizeof(ULONG32));
+            sprintf_s(addrStr, "Saved EBP            -> 0x%08x", static_cast<ULONG32>(address + i * sizeof(ULONG32)));
         } else if (std::find(eipArray.begin(), eipArray.end(), stackData[i]) != eipArray.end()) {
-            sprintf_s(addrStr, "Return Address (EIP) -> 0x%08x", address + i * sizeof(ULONG32));
+            sprintf_s(addrStr, "Return Address (EIP) -> 0x%08x", static_cast<ULONG32>(address + i * sizeof(ULONG32)));
         } else {
-            sprintf_s(addrStr, "Argument/Local Var   -> 0x%08x", address + i * sizeof(ULONG32));
+            sprintf_s(addrStr, "Argument/Local Var   -> 0x%08x", static_cast<ULONG32>(address + i * sizeof(ULONG32)));
         }
 
         // Format value
@@ -536,6 +537,192 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
     return stackContents;
 }
 
+bool processParam(const std::string &param, int &numElements, char &format)
+{
+    if (param.empty()) {
+        return true;
+    }
+
+    if (std::isdigit(param[0])) {
+        numElements = std::stoi(param);
+    } else if (param == "b" || param == "d" || param == "h" || param == "c") {
+        format = param[0];
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+bool handleParams(const std::string &param1, const std::string &param2, int &numElements, char &format)
+{
+    bool result1 = processParam(param1, numElements, format);
+    if (!result1) {
+        return false;
+    }
+
+    bool result2 = processParam(param2, numElements, format);
+    if (!result2) {
+        return false;
+    }
+
+    return true;
+}
+
+std::string parseArrayExpressionParameters(const std::string &expression, std::string &dataType, std::string &varName,
+                                           int &numElements, char &format)
+{
+    // Determine data type prefix and variable name
+    size_t start = 0;
+    if (expression.find("by(") == 0) {
+        dataType = "by";
+        start = 3;
+    } else if (expression.find("wo(") == 0) {
+        dataType = "wo";
+        start = 3;
+    } else if (expression.find("dwo(") == 0) {
+        dataType = "dwo";
+        start = 4;
+    } else {
+        return "<Invalid data type prefix>";
+    }
+
+    // Find variable name within parentheses
+    size_t end = expression.find(')', start);
+    if (end == std::string::npos) {
+        return "<Invalid format: missing closing parenthesis>";
+    }
+    varName = expression.substr(start, end - start);
+
+    // Check for additional parameters after the closing parenthesis
+    size_t paramStart = end + 1;
+    if (paramStart < expression.size() && expression[paramStart] == ',') {
+        // Parse the first optional parameter (count or format)
+        paramStart++;
+        while (paramStart < expression.size() && isspace(expression[paramStart]))
+            paramStart++;
+
+        if (isdigit(expression[paramStart])) {
+            numElements = std::stoi(expression.substr(paramStart));
+        } else if (expression[paramStart] == 'b' || expression[paramStart] == 'd' || expression[paramStart] == 'h' ||
+                   expression[paramStart] == 'c') {
+            format = expression[paramStart];
+            paramStart++;
+        } else {
+            return "<Invalid parameter format>";
+        }
+
+        // Parse the second optional parameter (format) if present
+        size_t nextComma = expression.find(',', paramStart);
+        if (nextComma != std::string::npos) {
+            paramStart = nextComma + 1;
+            while (paramStart < expression.size() && isspace(expression[paramStart]))
+                paramStart++;
+
+            if (isdigit(expression[paramStart])) {
+                numElements = std::stoi(expression.substr(paramStart));
+            } else if (expression[paramStart] == 'b' || expression[paramStart] == 'd' ||
+                       expression[paramStart] == 'h' || expression[paramStart] == 'c') {
+                format = expression[paramStart];
+                paramStart++;
+            } else {
+                return "<Invalid parameter format>";
+            }
+        }
+    }
+
+    return "";
+}
+
+std::string parseExpressionParameters(const std::string &expression, std::string &varName, char &format)
+{
+    format = 'h';
+
+    // Find the position of the comma, which separates varname and format
+    size_t commaPos = expression.find(',');
+    if (commaPos == std::string::npos) {
+        // No comma found, assume the whole expression is the variable name
+        varName = expression;
+        return ""; // Success with default format
+    }
+
+    // Extract the variable name (part before the comma)
+    varName = expression.substr(0, commaPos);
+    varName.erase(varName.find_last_not_of(" \t\n\r\f\v") + 1); // Trim trailing whitespace
+
+    // Extract and validate the format type (part after the comma)
+    size_t formatStart = commaPos + 1;
+    while (formatStart < expression.size() && isspace(expression[formatStart])) {
+        ++formatStart; // Skip leading whitespace after comma
+    }
+
+    if (formatStart < expression.size()) {
+        char specifiedFormat = expression[formatStart];
+        if (specifiedFormat == 'b' || specifiedFormat == 'd' || specifiedFormat == 'h' || specifiedFormat == 'c') {
+            format = specifiedFormat; // Valid format specified
+        } else {
+            return "<Invalid format type>"; // Invalid format type specified
+        }
+    }
+
+    return ""; // Indicate success by returning an empty string
+}
+
+std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memoryData, int index, char format)
+{
+    char buffer[64];
+
+    if (elementSize == 1) {
+        uint8_t byteValue = memoryData[index];
+        if (format == 'h') {
+            sprintf_s(buffer, sizeof(buffer), "0x%02x", byteValue);
+        } else if (format == 'd') {
+            sprintf_s(buffer, sizeof(buffer), "%d", byteValue);
+        } else if (format == 'b') {
+            std::string binaryStr = std::bitset<8>(byteValue).to_string();
+            binaryStr.insert(4, " "); // Group bits into nibbles (4 bits)
+            sprintf_s(buffer, sizeof(buffer), "0b%s", binaryStr.c_str());
+        } else if (format == 'c') {
+            if (isprint(byteValue)) {
+                sprintf_s(buffer, sizeof(buffer), "'%c'", byteValue);
+            } else {
+                sprintf_s(buffer, sizeof(buffer), "0x%02x", byteValue);
+            }
+            
+        }
+    } else if (elementSize == 2) {
+        uint16_t wordValue = *reinterpret_cast<const uint16_t *>(&memoryData[index * 2]);
+        if (format == 'h') {
+            sprintf_s(buffer, sizeof(buffer), "0x%04x", wordValue);
+        } else if (format == 'd') {
+            sprintf_s(buffer, sizeof(buffer), "%d", wordValue);
+        } else if (format == 'b') {
+            std::string binaryStr = std::bitset<16>(wordValue).to_string();
+            for (int j = 12; j > 0; j -= 4) { // Group bits into nibbles (4 bits)
+                binaryStr.insert(j, " ");
+            }
+            sprintf_s(buffer, sizeof(buffer), "0b%s", binaryStr.c_str());
+        }
+    } else if (elementSize == 4) {
+        uint32_t dwordValue = *reinterpret_cast<const uint32_t *>(&memoryData[index * 4]);
+        if (format == 'h') {
+            sprintf_s(buffer, sizeof(buffer), "0x%08x", dwordValue);
+        } else if (format == 'd') {
+            sprintf_s(buffer, sizeof(buffer), "%d", dwordValue);
+        } else if (format == 'b') {
+            std::string binaryStr = std::bitset<32>(dwordValue).to_string();
+            for (int j = 24; j > 0; j -= 8) { // Group bits into bytes (8 bits)
+                binaryStr.insert(j, " ");
+            }
+            sprintf_s(buffer, sizeof(buffer), "0b%s", binaryStr.c_str());
+        }
+    } else {
+        return "<Invalid data type>";
+    }
+
+    return std::string(buffer);
+}
+
 std::string Debugger::evaluateExpression(const std::string &expression)
 {
     std::lock_guard<std::mutex> lock(debugMutex);
@@ -543,14 +730,21 @@ std::string Debugger::evaluateExpression(const std::string &expression)
     hr = debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "n 10", DEBUG_EXECUTE_DEFAULT);
     hr = debugControl->SetExpressionSyntax(DEBUG_EXPR_MASM);
 
-    // Match expressions like "by(var), 5", "wo(var), 5", "dwo(var), 5"
-    std::regex formatRegex(R"((by|wo|dwo)\((\w+)\),\s*(\d+))");
-    std::smatch match;
+    std::string dataType, varName;
+    int numElements = 0;
+    char format = 0;
 
-    if (std::regex_match(expression, match, formatRegex)) {
-        std::string dataType = match[1].str(); // "by", "wo", or "dwo"
-        std::string varName = match[2].str();  // variable name
-        int numElements = std::stoi(match[3].str());
+    std::string parseError = parseArrayExpressionParameters(expression, dataType, varName, numElements, format);
+
+    if (parseError.empty()) {
+        if (!format) {
+            format = 'h';
+        }
+        bool printArray = true;
+        if (!numElements) {
+            numElements = 1;
+            printArray = false;
+        }
 
         int elementSize;
         if (dataType == "by") {
@@ -561,6 +755,10 @@ std::string Debugger::evaluateExpression(const std::string &expression)
             elementSize = 4; // double word (4 bytes)
         } else {
             return "<Invalid data type prefix>";
+        }
+
+        if (format == 'c' && dataType != "by") {
+            return "<Char format (c) can only be applied to bytes (by)>";
         }
 
         DEBUG_VALUE baseValue;
@@ -578,28 +776,49 @@ std::string Debugger::evaluateExpression(const std::string &expression)
             return "<Failed to read memory>";
         }
 
-        std::string result = varName + "{ ";
-        char buffer[32];
-        for (int i = 0; i < numElements; ++i) {
-            if (dataType == "by") {
-                // Display as byte
-                sprintf_s(buffer, sizeof(buffer), "0x%02x", static_cast<int>(memoryData[i]));
-            } else if (dataType == "wo") {
-                // Display as word (2 bytes)
-                uint16_t wordValue = *reinterpret_cast<uint16_t *>(&memoryData[i * 2]);
-                sprintf_s(buffer, sizeof(buffer), "0x%04x", wordValue);
-            } else if (dataType == "dwo") {
-                // Display as double word (4 bytes)
-                uint32_t dwordValue = *reinterpret_cast<uint32_t *>(&memoryData[i * 4]);
-                sprintf_s(buffer, sizeof(buffer), "0x%08x", dwordValue);
-            }
+        std::string result = "";
+        if (printArray) {
+            result = "{ ";
+        }
 
-            result += buffer;
+        for (int i = 0; i < numElements; ++i) {
+            result += formatMemoryValue(elementSize, memoryData, i, format);
             if (i < numElements - 1) {
                 result += ", ";
             }
         }
-        result += " }";
+        if (printArray) {
+            result += " }";
+        }
+        return result;
+    }
+
+    parseError = parseExpressionParameters(expression, varName, format);
+    if (parseError.empty()) {
+        DEBUG_VALUE value = {};
+        hr = debugControl->Evaluate(varName.c_str(), DEBUG_VALUE_INVALID, &value, nullptr);
+        if (FAILED(hr)) {
+            return "<Invalid expression>";
+        }
+
+        if (format == 'c') {
+            return "Char format (c) can't be applied";
+        }
+
+        char buffer[128];
+        if (format == 'h') {
+            sprintf_s(buffer, sizeof(buffer), "0x%08x", value.I32);
+        } else if (format == 'd') {
+            sprintf_s(buffer, sizeof(buffer), "%d", value.I32);
+        } else if (format == 'b') {
+            std::string binaryStr = std::bitset<32>(value.I32).to_string();
+            for (int j = 24; j > 0; j -= 8) { // Group bits into bytes (8 bits)
+                binaryStr.insert(j, " ");
+            }
+            sprintf_s(buffer, sizeof(buffer), "0b%s", binaryStr.c_str());
+        }
+        std::string result = "";
+        result += buffer;
         return result;
     }
 
@@ -636,7 +855,7 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
     if (SUCCEEDED(hr)) {
         // Add the address to the result string
         char addressStr[64];
-        sprintf_s(addressStr, "Address: 0x%08x", offset);
+        sprintf_s(addressStr, "Address: 0x%08x", static_cast<ULONG32>(offset));
         result += addressStr;
 
         // Determine the type size
@@ -656,7 +875,7 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
 
             if (typeSize == sizeof(uint64_t)) {
                 uint64_t value = *reinterpret_cast<uint64_t *>(buffer.data());
-                sprintf_s(valueStr, "Value: 0x%16x", value);
+                sprintf_s(valueStr, "Value: 0x%016x", value);
             } else if (typeSize == sizeof(uint32_t)) {
                 uint32_t value = *reinterpret_cast<uint32_t *>(buffer.data());
                 sprintf_s(valueStr, "Value: 0x%08x", value);
@@ -752,7 +971,6 @@ void Debugger::exit()
             debugControl->SetInterrupt(DEBUG_INTERRUPT_ACTIVE);
         }
     }
-    
 }
 
 void Debugger::eventLoop()
@@ -795,6 +1013,7 @@ void Debugger::eventLoop()
             } else {
                 onEvent(EventType::Stepped);
                 lastLineBreak = currentLineNumber;
+                
             }
         }
 
