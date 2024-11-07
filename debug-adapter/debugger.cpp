@@ -537,38 +537,6 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
     return stackContents;
 }
 
-bool processParam(const std::string &param, int &numElements, char &format)
-{
-    if (param.empty()) {
-        return true;
-    }
-
-    if (std::isdigit(param[0])) {
-        numElements = std::stoi(param);
-    } else if (param == "b" || param == "d" || param == "h" || param == "c") {
-        format = param[0];
-    } else {
-        return false;
-    }
-
-    return true;
-}
-
-bool handleParams(const std::string &param1, const std::string &param2, int &numElements, char &format)
-{
-    bool result1 = processParam(param1, numElements, format);
-    if (!result1) {
-        return false;
-    }
-
-    bool result2 = processParam(param2, numElements, format);
-    if (!result2) {
-        return false;
-    }
-
-    return true;
-}
-
 std::string parseArrayExpressionParameters(const std::string &expression, std::string &dataType, std::string &varName,
                                            int &numElements, char &format)
 {
@@ -605,7 +573,7 @@ std::string parseArrayExpressionParameters(const std::string &expression, std::s
         if (isdigit(expression[paramStart])) {
             numElements = std::stoi(expression.substr(paramStart));
         } else if (expression[paramStart] == 'b' || expression[paramStart] == 'd' || expression[paramStart] == 'h' ||
-                   expression[paramStart] == 'c') {
+                   expression[paramStart] == 'c' || expression[paramStart] == 'u') {
             format = expression[paramStart];
             paramStart++;
         } else {
@@ -622,7 +590,8 @@ std::string parseArrayExpressionParameters(const std::string &expression, std::s
             if (isdigit(expression[paramStart])) {
                 numElements = std::stoi(expression.substr(paramStart));
             } else if (expression[paramStart] == 'b' || expression[paramStart] == 'd' ||
-                       expression[paramStart] == 'h' || expression[paramStart] == 'c') {
+                       expression[paramStart] == 'h' || expression[paramStart] == 'c' ||
+                       expression[paramStart] == 'u') {
                 format = expression[paramStart];
                 paramStart++;
             } else {
@@ -658,7 +627,8 @@ std::string parseExpressionParameters(const std::string &expression, std::string
 
     if (formatStart < expression.size()) {
         char specifiedFormat = expression[formatStart];
-        if (specifiedFormat == 'b' || specifiedFormat == 'd' || specifiedFormat == 'h' || specifiedFormat == 'c') {
+        if (specifiedFormat == 'b' || specifiedFormat == 'd' || specifiedFormat == 'h' || specifiedFormat == 'c' ||
+            specifiedFormat == 'u') {
             format = specifiedFormat; // Valid format specified
         } else {
             return "<Invalid format type>"; // Invalid format type specified
@@ -677,7 +647,9 @@ std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memor
         if (format == 'h') {
             sprintf_s(buffer, sizeof(buffer), "0x%02x", byteValue);
         } else if (format == 'd') {
-            sprintf_s(buffer, sizeof(buffer), "%d", byteValue);
+            sprintf_s(buffer, sizeof(buffer), "%d", (int8_t)byteValue);
+        } else if (format == 'u') {
+            sprintf_s(buffer, sizeof(buffer), "%u", byteValue);
         } else if (format == 'b') {
             std::string binaryStr = std::bitset<8>(byteValue).to_string();
             binaryStr.insert(4, " "); // Group bits into nibbles (4 bits)
@@ -688,15 +660,17 @@ std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memor
             } else {
                 sprintf_s(buffer, sizeof(buffer), "0x%02x", byteValue);
             }
-            
         }
     } else if (elementSize == 2) {
         uint16_t wordValue = *reinterpret_cast<const uint16_t *>(&memoryData[index * 2]);
         if (format == 'h') {
             sprintf_s(buffer, sizeof(buffer), "0x%04x", wordValue);
         } else if (format == 'd') {
-            sprintf_s(buffer, sizeof(buffer), "%d", wordValue);
-        } else if (format == 'b') {
+            sprintf_s(buffer, sizeof(buffer), "%d", (int16_t)wordValue);
+        } else if (format == 'u') {
+            sprintf_s(buffer, sizeof(buffer), "%u", wordValue);
+        }
+        else if (format == 'b') {
             std::string binaryStr = std::bitset<16>(wordValue).to_string();
             for (int j = 12; j > 0; j -= 4) { // Group bits into nibbles (4 bits)
                 binaryStr.insert(j, " ");
@@ -708,7 +682,9 @@ std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memor
         if (format == 'h') {
             sprintf_s(buffer, sizeof(buffer), "0x%08x", dwordValue);
         } else if (format == 'd') {
-            sprintf_s(buffer, sizeof(buffer), "%d", dwordValue);
+            sprintf_s(buffer, sizeof(buffer), "%d", (int32_t)dwordValue);
+        } else if (format == 'u') {
+            sprintf_s(buffer, sizeof(buffer), "%u", dwordValue);
         } else if (format == 'b') {
             std::string binaryStr = std::bitset<32>(dwordValue).to_string();
             for (int j = 24; j > 0; j -= 8) { // Group bits into bytes (8 bits)
@@ -809,7 +785,9 @@ std::string Debugger::evaluateExpression(const std::string &expression)
         if (format == 'h') {
             sprintf_s(buffer, sizeof(buffer), "0x%08x", value.I32);
         } else if (format == 'd') {
-            sprintf_s(buffer, sizeof(buffer), "%d", value.I32);
+            sprintf_s(buffer, sizeof(buffer), "%d", (int)value.I32);
+        } else if (format == 'u') {
+            sprintf_s(buffer, sizeof(buffer), "%u", value.I32);
         } else if (format == 'b') {
             std::string binaryStr = std::bitset<32>(value.I32).to_string();
             for (int j = 24; j > 0; j -= 8) { // Group bits into bytes (8 bits)
@@ -1013,7 +991,6 @@ void Debugger::eventLoop()
             } else {
                 onEvent(EventType::Stepped);
                 lastLineBreak = currentLineNumber;
-                
             }
         }
 
