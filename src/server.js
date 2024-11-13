@@ -6,6 +6,8 @@ const {
     DiagnosticSeverity
 } = require('vscode-languageserver/node');
 const { TextDocument } = require('vscode-languageserver-textdocument');
+const { exec } = require('child_process');
+const { URI } = require('vscode-uri')
 
 // Create a connection for the server
 const connection = createConnection(ProposedFeatures.all);
@@ -30,7 +32,7 @@ const instructions = [
     { name: 'PUSH', detail: 'Push onto Stack', documentation: 'Pushes operand onto the stack.' },
     { name: 'POP', detail: 'Pop from Stack', documentation: 'Pops operand from the stack.' },
     { name: 'JGE', detail: 'Jump if Greater or Equal', documentation: 'Jump if the destination is greater than or equal to the source.' },
-    { name: 'NEG', detail: 'Negate', documentation: 'Negates the operand (two’s complement).'}
+    { name: 'NEG', detail: 'Negate', documentation: 'Negates the operand (two’s complement).' }
 ];
 
 const registers = [
@@ -139,29 +141,64 @@ function getWordAtPosition(document, position) {
     return start === end ? null : text.substring(start, end);
 }
 
+
+
 function validateTextDocument(textDocument) {
-    const text = textDocument.getText();
-    const diagnostics = [];
+    const filePath = URI.parse(textDocument.uri).fsPath
+    console.log(filePath)
 
-    const lines = text.split(/\r?\n/g);
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const index = line.indexOf('error');
-        if (index >= 0) {
-            const diagnostic = {
-                severity: DiagnosticSeverity.Error,
-                range: {
-                    start: { line: i, character: index },
-                    end: { line: i, character: index + 5 }
-                },
-                message: "Mock error: Found the word 'error'",
-                source: 'Mock Linter'
-            };
-            diagnostics.push(diagnostic);
+    exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe --json "${filePath}" "${textDocument.getText()}"`, (error, stdout, stderr) => {
+        let diagnostics = [];
+
+        if (error) {
+            console.error(`Error executing program: ${error}`);
+            return;
         }
-    }
+        try {
+            const output = JSON.parse(stdout);
+            
+            for (const diag of output) {
+                const diagnostic = {
+                    severity: DiagnosticSeverity.Error,
+                    range: {
+                        start: { line: diag.range.start.line, character: diag.range.start.character },
+                        end: { line: diag.range.end.line, character: diag.range.end.character }
+                    },
+                    message: diag.message,
+                    source: 'masmlint'
+                };
+                console.log(diagnostic);
+                diagnostics.push(diagnostic);
+            }
+        } catch (e) {
+            console.error(`Error parsing JSON output: ${e}`);
+            return;
+        }
+        console.log("Finished");
+        connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+    });
+    
 
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+    // const text = textDocument.getText();
+    // const lines = text.split(/\r?\n/g);
+    // for (let i = 0; i < lines.length; i++) {
+    //     const line = lines[i];
+    //     const index = line.indexOf('.DATA');
+    //     if (index >= 0) {
+    //         const diagnostic = {
+    //             severity: DiagnosticSeverity.Error,
+    //             range: {
+    //                 start: { line: i, character: index },
+    //                 end: { line: i, character: index + 5 }
+    //             },
+    //             message: "Mock error: Found the word 'error'",
+    //             source: 'Mock Linter'
+    //         };
+    //         diagnostics.push(diagnostic);
+    //     }
+    // }
+    // // console.log(diagnostics);
+    // connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 // Listen for document changes to trigger validation
@@ -169,19 +206,19 @@ documents.onDidChangeContent(change => {
     validateTextDocument(change.document);
 });
 
-// Also validate documents when they are first opened
+// // Also validate documents when they are first opened
 documents.onDidOpen(event => {
     validateTextDocument(event.document);
 });
 
 // Handle the custom request from the client to run code analysis
-// connection.onRequest('custom/runCodeAnalysis', (params) => {
-//     const uri = params.uri;
-//     const document = documents.get(uri);
-//     if (document) {
-//         validateTextDocument(document);
-//     }
-// });
+connection.onRequest('custom/runCodeAnalysis', (params) => {
+    const uri = params.uri;
+    const document = documents.get(uri);
+    if (document) {
+        validateTextDocument(document);
+    }
+});
 
 // Listen to document events
 documents.listen(connection);

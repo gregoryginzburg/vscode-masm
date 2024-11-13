@@ -317,7 +317,7 @@ std::vector<std::string> Debugger::getRegisters()
     }
 
     // Define the main 32-bit registers we are interested in
-    const std::set<std::string> main32BitRegisters = {"eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp"};
+    const std::set<std::string> main32BitRegisters = {"eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp", "cs", "ds", "ss"};
 
     for (ULONG i = 0; i < numRegisters; ++i) {
         char name[64];
@@ -355,12 +355,12 @@ std::map<std::string, std::string> Debugger::getEflags()
     uint32_t eflags = eflagsValue.I32;
 
     // Decode the main bits in the EFLAGS register
-    eflagsMap["Carry Flag (CF)"] = (eflags & (1 << 0)) ? "1" : "0";
-    eflagsMap["Zero Flag (ZF)"] = (eflags & (1 << 6)) ? "1" : "0";
-    eflagsMap["Sign Flag (SF)"] = (eflags & (1 << 7)) ? "1" : "0";
-    eflagsMap["Overflow Flag (OF)"] = (eflags & (1 << 11)) ? "1" : "0";
-    eflagsMap["Direction Flag (DF)"] = (eflags & (1 << 10)) ? "1" : "0";
-    eflagsMap["Interrupt Enable Flag (IF)"] = (eflags & (1 << 9)) ? "1" : "0";
+    eflagsMap["CF"] = (eflags & (1 << 0)) ? "1" : "0";
+    eflagsMap["OF"] = (eflags & (1 << 11)) ? "1" : "0";
+    eflagsMap["SF"] = (eflags & (1 << 7)) ? "1" : "0";
+    eflagsMap["ZF"] = (eflags & (1 << 6)) ? "1" : "0";
+    eflagsMap["DF"] = (eflags & (1 << 10)) ? "1" : "0";
+    eflagsMap["IF"] = (eflags & (1 << 9)) ? "1" : "0";
 
     return eflagsMap;
 }
@@ -495,7 +495,7 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
     std::vector<ULONG32> stackData{};
     stackData.resize(numEntries);
 
-    hr = debugDataSpaces->ReadVirtual(address, stackData.data(), stackData.size() * sizeof(ULONG32), &bytesRead);
+    hr = debugDataSpaces->ReadVirtual(address, stackData.data(), static_cast<ULONG>(stackData.size() * sizeof(ULONG32)), &bytesRead);
     if (FAILED(hr)) {
         printf("ReadVirtual failed: 0x%08X\n", hr);
         return stackContents;
@@ -519,15 +519,18 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
         char valStr[128];
         sprintf_s(valStr, "0x%08x", stackData[i]);
 
-        // Try to get the symbol name for the value
-        char symbolName[256];
-        ULONG64 displacement = 0;
-        hr = debugSymbols->GetNameByOffset(stackData[i], symbolName, sizeof(symbolName), nullptr, &displacement);
+        // Try to get the symbol name for the value (only for eip)
+        if (std::find(eipArray.begin(), eipArray.end(), stackData[i]) != eipArray.end()) {
+            char symbolName[256];
+            ULONG64 displacement = 0;
+            hr = debugSymbols->GetNameByOffset(stackData[i], symbolName, sizeof(symbolName), nullptr, &displacement);
 
-        if (SUCCEEDED(hr)) {
-            sprintf_s(valStr + strlen(valStr), sizeof(valStr) - strlen(valStr), " | Symbol %s+0x%llx", symbolName,
-                      displacement);
+            if (SUCCEEDED(hr)) {
+                sprintf_s(valStr + strlen(valStr), sizeof(valStr) - strlen(valStr), " | Symbol %s+0x%llx", symbolName,
+                          displacement);
+            }
         }
+
         entry.value = valStr;
         entry.address = addrStr;
 
@@ -538,7 +541,7 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
 }
 
 std::string parseArrayExpressionParameters(const std::string &expression, std::string &dataType, std::string &varName,
-                                           int &numElements, char &format)
+                                           size_t &numElements, char &format)
 {
     // Determine data type prefix and variable name
     size_t start = 0;
@@ -638,7 +641,7 @@ std::string parseExpressionParameters(const std::string &expression, std::string
     return ""; // Indicate success by returning an empty string
 }
 
-std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memoryData, int index, char format)
+std::string formatMemoryValue(size_t elementSize, const std::vector<uint8_t> &memoryData, int index, char format)
 {
     char buffer[64];
 
@@ -653,7 +656,7 @@ std::string formatMemoryValue(int elementSize, const std::vector<uint8_t> &memor
         } else if (format == 'b') {
             std::string binaryStr = std::bitset<8>(byteValue).to_string();
             binaryStr.insert(4, " "); // Group bits into nibbles (4 bits)
-            sprintf_s(buffer, sizeof(buffer), "0b%s", binaryStr.c_str());
+            sprintf_s(buffer, sizeof(buffer), "%s", binaryStr.c_str());
         } else if (format == 'c') {
             if (isprint(byteValue)) {
                 sprintf_s(buffer, sizeof(buffer), "'%c'", byteValue);
@@ -706,7 +709,7 @@ std::string Debugger::evaluateExpression(const std::string &expression)
     hr = debugControl->SetExpressionSyntax(DEBUG_EXPR_MASM);
 
     std::string dataType, varName;
-    int numElements = 0;
+    size_t numElements = 0;
     char format = 0;
 
     std::string parseError = parseArrayExpressionParameters(expression, dataType, varName, numElements, format);
@@ -721,7 +724,7 @@ std::string Debugger::evaluateExpression(const std::string &expression)
             printArray = false;
         }
 
-        int elementSize;
+        size_t elementSize;
         if (dataType == "by") {
             elementSize = 1; // byte
         } else if (dataType == "wo") {
@@ -746,7 +749,7 @@ std::string Debugger::evaluateExpression(const std::string &expression)
 
         std::vector<uint8_t> memoryData(numElements * elementSize);
         ULONG bytesRead = 0;
-        hr = debugDataSpaces->ReadVirtual(baseAddress, memoryData.data(), numElements * elementSize, &bytesRead);
+        hr = debugDataSpaces->ReadVirtual(baseAddress, memoryData.data(), static_cast<ULONG>(numElements * elementSize), &bytesRead);
         if (FAILED(hr) || bytesRead < numElements * elementSize) {
             return "<Failed to read memory>";
         }
@@ -862,7 +865,7 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
 
             if (typeSize == sizeof(uint64_t)) {
                 uint64_t value = *reinterpret_cast<uint64_t *>(buffer.data());
-                sprintf_s(valueStr, "Value: 0x%016x", value);
+                sprintf_s(valueStr, "Value: 0x%016llx", value);
             } else if (typeSize == sizeof(uint32_t)) {
                 uint32_t value = *reinterpret_cast<uint32_t *>(buffer.data());
                 sprintf_s(valueStr, "Value: 0x%08x", value);
@@ -897,13 +900,13 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
         hr = debugRegisters->GetDescription(i, name, sizeof(name), nullptr, nullptr);
         if (SUCCEEDED(hr)) {
             std::string regName(name);
-            std::transform(regName.begin(), regName.end(), regName.begin(), ::tolower);
+            std::transform(regName.begin(), regName.end(), regName.begin(), [](char c){ return static_cast<char>(::tolower(c));} );
             registerMap[regName] = i;
         }
     }
 
     std::string lowerRegisterName = variableName;
-    std::transform(lowerRegisterName.begin(), lowerRegisterName.end(), lowerRegisterName.begin(), ::tolower);
+    std::transform(lowerRegisterName.begin(), lowerRegisterName.end(), lowerRegisterName.begin(),[](char c){ return static_cast<char>(::tolower(c));} );
 
     auto it = registerMap.find(lowerRegisterName);
     if (it != registerMap.end()) {

@@ -17,9 +17,10 @@ function activate(context) {
   const serverModule = context.asAbsolutePath(path.join('src', 'server.js'));
 
   // Server options
+  let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
   const serverOptions = {
     run: { module: serverModule, transport: TransportKind.ipc },
-    debug: { module: serverModule, transport: TransportKind.ipc }
+    debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
   };
 
   // Client options
