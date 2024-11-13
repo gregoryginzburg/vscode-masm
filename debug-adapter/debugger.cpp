@@ -317,7 +317,7 @@ std::vector<std::string> Debugger::getRegisters()
     }
 
     // Define the main 32-bit registers we are interested in
-    const std::set<std::string> main32BitRegisters = {"eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp", "cs", "ds", "ss"};
+    const std::set<std::string> main32BitRegisters = {"eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp"};
 
     for (ULONG i = 0; i < numRegisters; ++i) {
         char name[64];
@@ -328,7 +328,7 @@ std::vector<std::string> Debugger::getRegisters()
             hr = debugRegisters->GetValue(i, &value);
             if (SUCCEEDED(hr) && value.Type == DEBUG_VALUE_INT32) {
                 char buffer[128];
-                sprintf_s(buffer, "%s = 0x%lx", name, value.I32);
+                sprintf_s(buffer, "%s = 0x%08x", name, value.I32);
                 registers.push_back(buffer);
             }
         }
@@ -337,32 +337,32 @@ std::vector<std::string> Debugger::getRegisters()
     return registers;
 }
 
-std::map<std::string, std::string> Debugger::getEflags()
+std::vector<std::pair<std::string, std::string>> Debugger::getEflags()
 {
-    std::map<std::string, std::string> eflagsMap;
+    std::vector<std::pair<std::string, std::string>> eflagsArray;
     DEBUG_VALUE eflagsValue;
 
     if (!debugControl) {
-        return eflagsMap;
+        return eflagsArray;
     }
 
     HRESULT hr = debugControl->Evaluate("efl", DEBUG_VALUE_INT32, &eflagsValue, nullptr);
     if (FAILED(hr) || eflagsValue.Type != DEBUG_VALUE_INT32) {
         printf("Evaluate('eflags') failed or returned unsupported type: 0x%08X\n", hr);
-        return eflagsMap;
+        return eflagsArray;
     }
 
     uint32_t eflags = eflagsValue.I32;
 
     // Decode the main bits in the EFLAGS register
-    eflagsMap["CF"] = (eflags & (1 << 0)) ? "1" : "0";
-    eflagsMap["OF"] = (eflags & (1 << 11)) ? "1" : "0";
-    eflagsMap["SF"] = (eflags & (1 << 7)) ? "1" : "0";
-    eflagsMap["ZF"] = (eflags & (1 << 6)) ? "1" : "0";
-    eflagsMap["DF"] = (eflags & (1 << 10)) ? "1" : "0";
-    eflagsMap["IF"] = (eflags & (1 << 9)) ? "1" : "0";
+    eflagsArray.emplace_back("CF", (eflags & (1 << 0)) ? "1" : "0");
+    eflagsArray.emplace_back("OF", (eflags & (1 << 11)) ? "1" : "0");
+    eflagsArray.emplace_back("SF", (eflags & (1 << 7)) ? "1" : "0");
+    eflagsArray.emplace_back("ZF", (eflags & (1 << 6)) ? "1" : "0");
+    eflagsArray.emplace_back("DF", (eflags & (1 << 10)) ? "1" : "0");
+    eflagsArray.emplace_back("IF", (eflags & (1 << 9)) ? "1" : "0");
 
-    return eflagsMap;
+    return eflagsArray;
 }
 
 void Debugger::selectApplicationThread()
@@ -915,9 +915,9 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
         if (SUCCEEDED(hr)) {
             char buffer[128];
             if (value.Type == DEBUG_VALUE_INT64) {
-                sprintf_s(buffer, "0x%llx", value.I64);
+                sprintf_s(buffer, "0x%016llx", value.I64);
             } else if (value.Type == DEBUG_VALUE_INT32) {
-                sprintf_s(buffer, "0x%lx", value.I32);
+                sprintf_s(buffer, "0x%08x", value.I32);
             } else {
                 sprintf_s(buffer, "<unsupported type>");
             }

@@ -44,11 +44,11 @@ public:
     void stepOut();
     void setBreakpoints(const std::string &sourceFile, const std::vector<dap::integer> &lines);
     std::vector<std::string> getRegisters();
+    std::vector<std::pair<std::string, std::string>> getEflags();
     std::vector<StackEntry> getStackContents();
     std::vector<dap::StackFrame> getCallStack();
     std::string evaluateExpression(const std::string &expression);
     std::string evaluateVariable(const std::string &variableName);
-    std::map<std::string, std::string> getEflags();
     ExceptionInfo getExceptionInfo(dap::integer threadId);
     ExceptionInfo lastExceptionInfo;
     void exit();
