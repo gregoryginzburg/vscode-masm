@@ -142,64 +142,127 @@ function getWordAtPosition(document, position) {
 }
 
 
-
 function validateTextDocument(textDocument) {
     const filePath = URI.parse(textDocument.uri).fsPath
-    console.log(filePath)
-
-    exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe --json "${filePath}" "${textDocument.getText()}"`, (error, stdout, stderr) => {
+    const childProcess = exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe  --json --stdin "${filePath}"`, (error, stdout, stderr) => {
         let diagnostics = [];
 
         if (error) {
-            console.error(`Error executing program: ${error}`);
+            console.error(`Error executing linter: ${error}`);
             return;
         }
+
         try {
             const output = JSON.parse(stdout);
-            
+
             for (const diag of output) {
                 const diagnostic = {
-                    severity: DiagnosticSeverity.Error,
+                    severity: diag.severity === 'Error' ? DiagnosticSeverity.Error :
+                        diag.severity === 'Warning' ? DiagnosticSeverity.Warning :
+                            DiagnosticSeverity.Information,
                     range: {
-                        start: { line: diag.range.start.line, character: diag.range.start.character },
-                        end: { line: diag.range.end.line, character: diag.range.end.character }
+                        start: { line: diag.primaryLabel.span.start.line, character: diag.primaryLabel.span.start.character },
+                        end: { line: diag.primaryLabel.span.end.line, character: diag.primaryLabel.span.end.character }
                     },
                     message: diag.message,
-                    source: 'masmlint'
+                    source: '',
+                    relatedInformation: []
                 };
-                console.log(diagnostic);
+
+                // Append primary label message if it exists
+                if (diag.primaryLabel.message && diag.primaryLabel.message !== '') {
+                    diagnostic.message += `\n${diag.primaryLabel.message}`;
+                }
+
+                // Handle secondary labels
+                for (const secondaryLabel of diag.secondaryLabels) {
+                    const relatedInfoDiagnostic = {
+                        severity: DiagnosticSeverity.Information,
+                        range: {
+                            start: {
+                                line: secondaryLabel.span.start.line,
+                                character: secondaryLabel.span.start.character
+                            },
+                            end: {
+                                line: secondaryLabel.span.end.line,
+                                character: secondaryLabel.span.end.character
+                            }
+                        },
+                        message: secondaryLabel.message,
+                        source: '',
+                        relatedInformation: [{
+                            location: {
+                                uri: textDocument.uri, // TODO: fix this to work in several files
+                                range: diagnostic.range
+                            },
+                            message: "original error"
+                        }]
+                    };
+
+                    diagnostics.push(relatedInfoDiagnostic);
+
+                    const relatedInfo = {
+                        location: {
+                            uri: textDocument.uri, // TODO: fix this to work in several files
+                            range: {
+                                start: {
+                                    line: secondaryLabel.span.start.line,
+                                    character: secondaryLabel.span.start.character
+                                },
+                                end: {
+                                    line: secondaryLabel.span.end.line,
+                                    character: secondaryLabel.span.end.character
+                                }
+                            }
+                        },
+                        message: secondaryLabel.message
+                    };
+                    diagnostic.relatedInformation.push(relatedInfo);
+                }
+
                 diagnostics.push(diagnostic);
             }
         } catch (e) {
             console.error(`Error parsing JSON output: ${e}`);
+            console.error(`Stdout: ${stdout}`);
+            console.error(`Stderr: ${stderr}`);
             return;
         }
-        console.log("Finished");
+
         connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
     });
-    
 
-    // const text = textDocument.getText();
-    // const lines = text.split(/\r?\n/g);
-    // for (let i = 0; i < lines.length; i++) {
-    //     const line = lines[i];
-    //     const index = line.indexOf('.DATA');
-    //     if (index >= 0) {
-    //         const diagnostic = {
-    //             severity: DiagnosticSeverity.Error,
-    //             range: {
-    //                 start: { line: i, character: index },
-    //                 end: { line: i, character: index + 5 }
-    //             },
-    //             message: "Mock error: Found the word 'error'",
-    //             source: 'Mock Linter'
-    //         };
-    //         diagnostics.push(diagnostic);
-    //     }
-    // }
-    // // console.log(diagnostics);
-    // connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+    // Write the document content to stdin
+    childProcess.stdin.write(textDocument.getText());
+    childProcess.stdin.end();
 }
+
+
+//     // Write the document content to stdin
+//     childProcess.stdin.write(textDocument.getText());
+//     childProcess.stdin.end();
+
+//     // const text = textDocument.getText();
+//     // const lines = text.split(/\r?\n/g);
+//     // for (let i = 0; i < lines.length; i++) {
+//     //     const line = lines[i];
+//     //     const index = line.indexOf('.DATA');
+//     //     if (index >= 0) {
+//     //         const diagnostic = {
+//     //             severity: DiagnosticSeverity.Error,
+//     //             range: {
+//     //                 start: { line: i, character: index },
+//     //                 end: { line: i, character: index + 5 }
+//     //             },
+//     //             message: "Mock error: Found the word 'error'",
+//     //             source: 'Mock Linter'
+//     //         };
+//     //         diagnostics.push(diagnostic);
+//     //     }
+//     // }
+//     // // console.log(diagnostics);
+//     // connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+
 
 // Listen for document changes to trigger validation
 documents.onDidChangeContent(change => {
