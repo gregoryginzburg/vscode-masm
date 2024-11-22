@@ -92,13 +92,28 @@
             ]
         },
         "strings": {
-            "name": "string.quoted.double.masm",
-            "begin": "\"",
-            "end": "\"",
             "patterns": [
                 {
-                    "name": "constant.character.escape.masm",
-                    "match": "\\\\."
+                    "name": "string.quoted.single.masm",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.masm",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.double.masm",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.masm",
+                            "match": "\\\\."
+                        }
+                    ]
                 }
             ]
         },

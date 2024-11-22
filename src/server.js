@@ -144,7 +144,8 @@ function getWordAtPosition(document, position) {
 
 function validateTextDocument(textDocument) {
     const filePath = URI.parse(textDocument.uri).fsPath
-    const childProcess = exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe  --json --stdin "${filePath}"`, (error, stdout, stderr) => {
+    // TODO: change location is release
+    const childProcess = exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint.exe  --json --stdin "${filePath}"`, (error, stdout, stderr) => {
         let diagnostics = [];
 
         if (error) {
@@ -174,10 +175,15 @@ function validateTextDocument(textDocument) {
                     diagnostic.message += `\n${diag.primaryLabel.message}`;
                 }
 
+                // append note message if it exists
+                if (diag.note_message && diag.note_message !== '') {
+                    diagnostic.message += `\n = note: ${diag.note_message}`;
+                }
+
                 // Handle secondary labels
                 for (const secondaryLabel of diag.secondaryLabels) {
                     const relatedInfoDiagnostic = {
-                        severity: DiagnosticSeverity.Information,
+                        severity: DiagnosticSeverity.Hint,
                         range: {
                             start: {
                                 line: secondaryLabel.span.start.line,
