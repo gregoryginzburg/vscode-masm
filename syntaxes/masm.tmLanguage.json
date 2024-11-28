@@ -6,9 +6,6 @@
             "include": "#segments"
         },
         {
-            "include": "#keywords"
-        },
-        {
             "include": "#registers"
         },
         {
@@ -16,6 +13,12 @@
         },
         {
             "include": "#directives"
+        },
+        {
+            "include": "#types"
+        },
+        {
+            "include": "#operators"
         },
         {
             "include": "#numbers"
@@ -37,16 +40,8 @@
         "segments": {
             "patterns": [
                 {
-                    "name": "keyword.segment.masm",
-                    "match": "(?i)\\b(\\.CODE|\\.DATA|\\.STACK)\\b"
-                }
-            ]
-        },
-        "keywords": {
-            "patterns": [
-                {
-                    "name": "keyword.control.masm",
-                    "match": "(?i)\\b(if|else|while|for|return|end)\\b"
+                    "name": "keyword",
+                    "match": "(?i)(\\.CODE|\\.DATA|\\.STACK)"
                 }
             ]
         },
@@ -54,7 +49,7 @@
             "patterns": [
                 {
                     "name": "variable.register.masm",
-                    "match": "(?i)\\b(eax|ebx|ecx|edx|esi|edi|esp|ebp|ax|bx|cx|dx|si|di|sp|bp|al|bl|cl|dl|ah|bh|ch|dh)\\b"
+                    "match": "(?i)\\b(AL|AX|EAX|BL|BX|EBX|CL|CX|ECX|DL|DX|EDX|SI|ESI|DI|EDI|BP|EBP|SP|ESP)\\b"
                 }
             ]
         },
@@ -62,7 +57,7 @@
             "patterns": [
                 {
                     "name": "keyword.instruction.masm",
-                    "match": "(?i)\\b(mov|add|sub|mul|div|jmp|cmp|push|pop|call|ret|inc|dec|and|or|xor|shl|shr|jge|neg|offset)\\b"
+                    "match": "(?i)\\b(MOV|XCHG|MOVZX|MOVSX|DIV|IDIV|MUL|IMUL|ADD|ADC|INC|SUB|SBB|DEC|NEG|JE|JNE|JA|JAE|JB|JBE|JL|JLE|JG|JGE|JC|JNC|JZ|JNZ|JMP|CALL|RET|SHL|SHR|ROL|RCL|ROR|RCR|AND|OR|XOR|REP|REPE|REPNE|MOVSB|MOVSW|MOVSD|LODSB|LODSW|LODSD|STOSB|STOSW|STOSD|SCASB|SCASW|SCASD|CMPSB|CMPSW|CMPSD|INCHAR|ININT|EXIT|OUTI|OUTU|OUTSTR|OUTCHAR|NEWLINE)\\b"
                 }
             ]
         },
@@ -70,7 +65,23 @@
             "patterns": [
                 {
                     "name": "keyword.directive.masm",
-                    "match": "(?i)\\b(SEGMENT|ENDS|ASSUME|ORG|ENDP|PROC|PTR|WORD|DWORD|BYTE|DB|DW|DD|DQ)\\b"
+                    "match": "(?i)\\b(INCLUDE|EQU|=|DB|DW|DD|DQ|END|PROC|ENDP|STRUC|ENDS|RECORD|SEGMENT|ASSUME|ORG|PTR|WORD|DWORD|BYTE|QWORD)\\b"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                    "name": "storage.type.masm",
+                    "match": "(?i)\\b(BYTE|WORD|DWORD|QWORD)\\b"
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword",
+                    "match": "(?i)([+\\-*/]|\\b(MOD|SHL|SHR|PTR|TYPE|SIZE|SIZEOF|LENGTH|LENGTHOF|WIDTH|MASK|OFFSET|DUP)\\b)"
                 }
             ]
         },
@@ -78,7 +89,7 @@
             "patterns": [
                 {
                     "name": "constant.numeric.masm",
-                    "match": "\\b0x[0-9A-Fa-f]+\\b|\\b[0-9]+\\b"
+                    "match": "\\b[0-9a-fA-F]+[hH]\\b|\\b[01]+[bByY]\\b|\\b[0-7]+[oOqQ]\\b|\\b[0-9]+[dDtT]?\\b"
                 }
             ]
         },

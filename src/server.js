@@ -36,7 +36,8 @@ const instructions = [
 ];
 
 const registers = [
-    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.\n```masm\nmov eax, ebx\n```' },
+    // ```masm\nmov eax, ebx\n``` - syntax highlthing works here
+    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.\n' },
     { name: 'EBX', detail: 'Base Register', documentation: 'General-purpose base register.' },
     { name: 'ECX', detail: 'Counter Register', documentation: 'General-purpose counter register.' },
     { name: 'EDX', detail: 'Data Register', documentation: 'General-purpose data register.' },
@@ -145,7 +146,7 @@ function getWordAtPosition(document, position) {
 function validateTextDocument(textDocument) {
     const filePath = URI.parse(textDocument.uri).fsPath
     // TODO: change location is release
-    const childProcess = exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint.exe  --json --stdin "${filePath}"`, (error, stdout, stderr) => {
+    const childProcess = exec(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe  --json --stdin "${filePath}"`, (error, stdout, stderr) => {
         let diagnostics = [];
 
         if (error) {
@@ -177,13 +178,13 @@ function validateTextDocument(textDocument) {
 
                 // append note message if it exists
                 if (diag.note_message && diag.note_message !== '') {
-                    diagnostic.message += `\n = note: ${diag.note_message}`;
+                    diagnostic.message += `\nnote: ${diag.note_message}`;
                 }
 
                 // Handle secondary labels
                 for (const secondaryLabel of diag.secondaryLabels) {
                     const relatedInfoDiagnostic = {
-                        severity: DiagnosticSeverity.Hint,
+                        severity: DiagnosticSeverity.Information,
                         range: {
                             start: {
                                 line: secondaryLabel.span.start.line,
