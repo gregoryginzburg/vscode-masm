@@ -276,7 +276,7 @@ documents.onDidChangeContent(change => {
     validateTextDocument(change.document);
 });
 
-// // Also validate documents when they are first opened
+// Also validate documents when they are first opened
 documents.onDidOpen(event => {
     validateTextDocument(event.document);
 });
