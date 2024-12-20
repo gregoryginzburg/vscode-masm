@@ -6,6 +6,7 @@
   "engines": {
     "vscode": "^1.94.0"
   },
+  "activationEvents": [],
   "categories": [
     "Programming Languages"
   ],
@@ -25,10 +26,6 @@
       {
         "command": "helloworld.helloWorld",
         "title": "Hello World"
-      },
-      {
-        "command": "extension.runCodeAnalysis",
-        "title": "Run Code Analysis"
       }
     ],
     "keybindings": [
@@ -53,13 +50,6 @@
         {
           "command": "extension.debugMasmFile",
           "when": "resourceLangId == masm",
-          "group": "navigation"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "extension.runCodeAnalysis",
-          "when": "editorLangId == masm",
           "group": "navigation"
         }
       ]
@@ -136,21 +126,14 @@
       }
     ]
   },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b",
-    "watch": "tsc -b -w",
-    "postinstall": "node ./node_modules/vscode/bin/install"
-  },
   "dependencies": {
-    "@types/vscode": "^1.1.37",
-    "typescript": "^5.6.3",
-    "vscode-languageclient": "^7.0.0",
-    "vscode-languageserver": "^7.0.0",
-    "vscode-languageserver-textdocument": "^1.0.1",
-    "vscode-uri": "^3.0.8"
+    "@types/vscode": "1.96.0",
+    "vscode-languageclient": "9.0.1",
+    "vscode-languageserver": "9.0.1",
+    "vscode-languageserver-textdocument": "1.0.12",
+    "vscode-uri": "3.0.8"
   },
   "devDependencies": {
-    "@types/node": "^22.7.9"
+    "@types/node": "22.10.2"
   }
 }

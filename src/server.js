@@ -16,28 +16,76 @@ const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 // MASM Instructions and Registers
+// add more details?
 const instructions = [
-    { name: 'MOV', detail: 'Move data', documentation: 'Moves data from source to destination.' },
+    { name: 'ADC', detail: 'Add with Carry', documentation: 'Adds the source operand and the carry flag to the destination operand.' },
     { name: 'ADD', detail: 'Addition', documentation: 'Adds source to destination.' },
-    { name: 'SUB', detail: 'Subtraction', documentation: 'Subtracts source from destination.' },
-    { name: 'MUL', detail: 'Multiplication', documentation: 'Multiplies unsigned integers.' },
-    { name: 'DIV', detail: 'Division', documentation: 'Divides unsigned integers.' },
-    { name: 'INC', detail: 'Increment', documentation: 'Increments operand by 1.' },
-    { name: 'DEC', detail: 'Decrement', documentation: 'Decrements operand by 1.' },
-    { name: 'CMP', detail: 'Compare', documentation: 'Compares two operands.' },
-    { name: 'JMP', detail: 'Jump', documentation: 'Unconditional jump to a label.' },
-    { name: 'JE', detail: 'Jump if Equal', documentation: 'Jump if zero flag is set.' },
+    { name: 'AND', detail: 'Logical AND', documentation: 'Performs a bitwise AND operation between source and destination.' },
     { name: 'CALL', detail: 'Call Procedure', documentation: 'Calls a procedure.' },
-    { name: 'RET', detail: 'Return', documentation: 'Returns from a procedure.' },
-    { name: 'PUSH', detail: 'Push onto Stack', documentation: 'Pushes operand onto the stack.' },
+    { name: 'CBW', detail: 'Convert Byte to Word', documentation: 'Converts a signed byte to a signed word.' },
+    { name: 'CDQ', detail: 'Convert Double to Quad', documentation: 'Converts a signed doubleword to a signed quadword.' },
+    { name: 'CMP', detail: 'Compare', documentation: 'Compares two operands.' },
+    { name: 'CWD', detail: 'Convert Word to Doubleword', documentation: 'Converts a signed word to a signed doubleword.' },
+    { name: 'DEC', detail: 'Decrement', documentation: 'Decrements operand by 1.' },
+    { name: 'DIV', detail: 'Unsigned Division', documentation: 'Divides unsigned integers.' },
+    { name: 'IDIV', detail: 'Signed Division', documentation: 'Divides signed integers.' },
+    { name: 'IMUL', detail: 'Signed Multiplication', documentation: 'Multiplies signed integers.' },
+    { name: 'INC', detail: 'Increment', documentation: 'Increments operand by 1.' },
+    { name: 'JA', detail: 'Jump if Above', documentation: 'Jump if the destination is strictly greater than the source (unsigned comparison).' },
+    { name: 'JAE', detail: 'Jump if Above or Equal', documentation: 'Jump if the destination is greater than or equal to the source (unsigned comparison).' },
+    { name: 'JB', detail: 'Jump if Below', documentation: 'Jump if the destination is strictly less than the source (unsigned comparison).' },
+    { name: 'JBE', detail: 'Jump if Below or Equal', documentation: 'Jump if the destination is less than or equal to the source (unsigned comparison).' },
+    { name: 'JC', detail: 'Jump if Carry', documentation: 'Jump if the carry flag is set.' },
+    { name: 'JE', detail: 'Jump if Equal', documentation: 'Jump if zero flag is set.' },
+    { name: 'JECXZ', detail: 'Jump if ECX is Zero', documentation: 'Jump if ECX register equals zero.' },
+    { name: 'JG', detail: 'Jump if Greater', documentation: 'Jump if the destination is strictly greater than the source (signed comparison).' },
+    { name: 'JGE', detail: 'Jump if Greater or Equal', documentation: 'Jump if the destination is greater than or equal to the source (signed comparison).' },
+    { name: 'JL', detail: 'Jump if Less', documentation: 'Jump if the destination is strictly less than the source (signed comparison).' },
+    { name: 'JLE', detail: 'Jump if Less or Equal', documentation: 'Jump if the destination is less than or equal to the source (signed comparison).' },
+    { name: 'JMP', detail: 'Jump', documentation: 'Unconditional jump to a label.' },
+    { name: 'JNC', detail: 'Jump if No Carry', documentation: 'Jump if the carry flag is not set.' },
+    { name: 'JNE', detail: 'Jump if Not Equal', documentation: 'Jump if zero flag is not set.' },
+    { name: 'JNZ', detail: 'Jump if Not Zero', documentation: 'Jump if zero flag is not set.' },
+    { name: 'JZ', detail: 'Jump if Zero', documentation: 'Jump if zero flag is set.' },
+    { name: 'LEA', detail: 'Load Effective Address', documentation: 'Loads the effective address of the source operand into the destination.' },
+    { name: 'LOOP', detail: 'Loop', documentation: 'Decrements ECX and jumps if ECX is not zero.' },
+    { name: 'MOV', detail: 'Move', documentation: 'Moves data from source to destination.' },
+    { name: 'MOVSX', detail: 'Move with Sign Extension', documentation: 'Moves data with sign extension from source to destination.' },
+    { name: 'MOVZX', detail: 'Move with Zero Extension', documentation: 'Moves data with zero extension from source to destination.' },
+    { name: 'MUL', detail: 'Multiplication', documentation: 'Multiplies unsigned integers.' },
+    { name: 'NEG', detail: 'Negate', documentation: 'Negates the operand (two’s complement).' },
+    { name: 'NOT', detail: 'Bitwise NOT', documentation: 'Inverts all the bits in the operand.' },
+    { name: 'OR', detail: 'Logical OR', documentation: 'Performs a bitwise OR operation between source and destination.' },
     { name: 'POP', detail: 'Pop from Stack', documentation: 'Pops operand from the stack.' },
-    { name: 'JGE', detail: 'Jump if Greater or Equal', documentation: 'Jump if the destination is greater than or equal to the source.' },
-    { name: 'NEG', detail: 'Negate', documentation: 'Negates the operand (two’s complement).' }
+    { name: 'POPFD', detail: 'Pop Flags', documentation: 'Pops the top of the stack into the EFLAGS register.' },
+    { name: 'PUSH', detail: 'Push onto Stack', documentation: 'Pushes operand onto the stack.' },
+    { name: 'PUSHFD', detail: 'Push Flags', documentation: 'Pushes the EFLAGS register onto the stack.' },
+    { name: 'RCL', detail: 'Rotate through Carry Left', documentation: 'Rotates bits to the left through the carry flag.' },
+    { name: 'RCR', detail: 'Rotate through Carry Right', documentation: 'Rotates bits to the right through the carry flag.' },
+    { name: 'RET', detail: 'Return', documentation: 'Returns from a procedure.' },
+    { name: 'ROL', detail: 'Rotate Left', documentation: 'Rotates bits to the left.' },
+    { name: 'ROR', detail: 'Rotate Right', documentation: 'Rotates bits to the right.' },
+    { name: 'SBB', detail: 'Subtract with Borrow', documentation: 'Subtracts source and the carry flag from the destination.' },
+    { name: 'SHL', detail: 'Shift Left', documentation: 'Shifts bits to the left.' },
+    { name: 'SHR', detail: 'Shift Right', documentation: 'Shifts bits to the right.' },
+    { name: 'SUB', detail: 'Subtraction', documentation: 'Subtracts source from destination.' },
+    { name: 'TEST', detail: 'Logical Compare', documentation: 'Performs a bitwise AND operation between two operands, updating flags but not storing the result.' },
+    { name: 'XCHG', detail: 'Exchange', documentation: 'Exchanges the values of the source and destination operands.' },
+    { name: 'XOR', detail: 'Logical Exclusive OR', documentation: 'Performs a bitwise XOR operation between source and destination.' },
+    { name: 'INCHAR', detail: 'Input Character', documentation: 'Reads a character from input.' },
+    { name: 'ININT', detail: 'Input Integer', documentation: 'Reads an integer from input.' },
+    { name: 'EXIT', detail: 'Exit Program', documentation: 'Terminates the program.' },
+    { name: 'OUTI', detail: 'Output Integer', documentation: 'Outputs an integer to the console.' },
+    { name: 'OUTU', detail: 'Output Unsigned Integer', documentation: 'Outputs an unsigned integer to the console.' },
+    { name: 'OUTSTR', detail: 'Output String', documentation: 'Outputs a string to the console.' },
+    { name: 'OUTCHAR', detail: 'Output Character', documentation: 'Outputs a character to the console.' },
+    { name: 'NEWLINE', detail: 'New Line', documentation: 'Prints a newline character.' }
 ];
+
 
 const registers = [
     // ```masm\nmov eax, ebx\n``` - syntax highlthing works here
-    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.\n' },
+    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.' },
     { name: 'EBX', detail: 'Base Register', documentation: 'General-purpose base register.' },
     { name: 'ECX', detail: 'Counter Register', documentation: 'General-purpose counter register.' },
     { name: 'EDX', detail: 'Data Register', documentation: 'General-purpose data register.' },
@@ -279,15 +327,6 @@ documents.onDidChangeContent(change => {
 // Also validate documents when they are first opened
 documents.onDidOpen(event => {
     validateTextDocument(event.document);
-});
-
-// Handle the custom request from the client to run code analysis
-connection.onRequest('custom/runCodeAnalysis', (params) => {
-    const uri = params.uri;
-    const document = documents.get(uri);
-    if (document) {
-        validateTextDocument(document);
-    }
 });
 
 // Listen to document events

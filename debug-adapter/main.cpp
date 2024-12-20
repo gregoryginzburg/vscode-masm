@@ -19,7 +19,7 @@
 #include <fstream>
 
 // #define USE_SERVER_MODE
-#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt"
+#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt" // TODO: remove in release
 
 namespace dap {
 
@@ -40,11 +40,11 @@ DAP_STRUCT_TYPEINFO_EXT(MyLaunchRequest, LaunchRequest, "launch", DAP_FIELD(prog
 
 } // namespace dap
 
-static std::function<void(Debugger::EventType)> createDebuggerEventHandler(const std::shared_ptr<dap::Session> &session,
+static std::function<void(Debugger::Event)> createDebuggerEventHandler(const std::shared_ptr<dap::Session> &session,
                                                                            const std::shared_ptr<SessionState> &state)
 {
-    return [session, state](Debugger::EventType event) {
-        switch (event) {
+    return [session, state](Debugger::Event event) {
+        switch (event.type) {
         case Debugger::EventType::BreakpointHit: {
             dap::StoppedEvent stoppedEvent;
             stoppedEvent.threadId = 1;
@@ -84,7 +84,7 @@ static std::function<void(Debugger::EventType)> createDebuggerEventHandler(const
             dap::StoppedEvent stoppedEvent;
             stoppedEvent.threadId = 1;
             stoppedEvent.reason = "exception";
-            // stoppedEvent.description = debugger->lastExceptionInfo.description; // TODO: pass as argument
+            stoppedEvent.description = event.description;
             stoppedEvent.allThreadsStopped = true;
             session->send(stoppedEvent);
         }
@@ -426,7 +426,7 @@ static int runStdioMode()
     debugger = std::make_shared<Debugger>(handler);
     setupSessionHandlers(session, state, debugger);
 
-    std::ofstream errorFile("C:\\Users\\grigo\\Documents\\masm\\error_log.txt", std::ios::out | std::ios::app);
+    std::ofstream errorFile("C:\\Users\\grigo\\Documents\\masm\\error_log.txt", std::ios::out | std::ios::app); // TODO: remove in release
     // Redirect std::cerr to the file
     std::cerr.rdbuf(errorFile.rdbuf());
 

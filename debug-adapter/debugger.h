@@ -13,9 +13,17 @@
 #include "event.h"
 #include <map>
 
+
 class Debugger {
 public:
     enum class EventType { BreakpointHit, Stepped, Paused, Exited, Exception };
+
+    struct Event {
+        Event(EventType type) : type(type) {}
+        Event(EventType type, std::string description) : type(type), description(description) {}
+        EventType type;
+        std::string description;
+    };
 
     struct StackEntry {
         std::string address;
@@ -29,7 +37,7 @@ public:
         dap::ExceptionDetails details;
     };
 
-    using EventHandler = std::function<void(EventType)>;
+    using EventHandler = std::function<void(Event)>;
 
     Debugger(const EventHandler &handler);
     ~Debugger();
@@ -115,9 +123,9 @@ private:
     std::mutex debugMutex;
 
     // Event signaling
-    Event hasInitialized;
-    Event hasExited;
-    Event waitForEvent;
+    ::Event hasInitialized;
+    ::Event hasExited;
+    ::Event waitForEvent;
     int eventsHandledCnt = 0;
 
     int lastLineBreak = -1;

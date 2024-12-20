@@ -1083,10 +1083,10 @@ STDMETHODIMP Debugger::MyDebugEventCallbacks::Exception(PEXCEPTION_RECORD64 Exce
         if (first2) {
             first2 = false;
         } else {
-            debugger->onEvent(EventType::Exception);
+            debugger->onEvent(Event(EventType::Exception, description));
         }
     } else {
-        debugger->onEvent(EventType::Exception);
+        debugger->onEvent(Event(EventType::Exception, description));
     }
     return DEBUG_STATUS_BREAK;
 }
