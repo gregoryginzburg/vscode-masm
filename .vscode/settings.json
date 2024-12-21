@@ -1,6 +1,6 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/debug-adapter",
-    "cmake.buildDirectory": "${workspaceFolder}/debug-adapter/build",
+    "cmake.sourceDirectory": "${workspaceFolder}/debug-adapter-server",
+    "cmake.buildDirectory": "${workspaceFolder}/debug-adapter-server/build",
     "git.decorations.enabled": false,
     "files.associations": {
         "mutex": "cpp",

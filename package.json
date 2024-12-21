@@ -15,7 +15,9 @@
   "categories": [
     "Programming Languages"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onTaskType:masmbuild"
+  ],
   "main": "./client/out/extension.js",
   "contributes": {
     "commands": [
@@ -88,7 +90,7 @@
     ],
     "debuggers": [
       {
-        "type": "masm",
+        "type": "masmdbg",
         "label": "MASM Debugger",
         "windows": {
           "program": "./bin/MasmDebugAdapter.exe"
@@ -111,11 +113,6 @@
                   "type": "string"
                 },
                 "default": []
-              },
-              "stopOnEntry": {
-                "type": "boolean",
-                "description": "Stop at the entry point of the program",
-                "default": false
               }
             }
           }
@@ -123,10 +120,9 @@
         "initialConfigurations": [
           {
             "name": "Debug MASM Program",
-            "type": "masm",
+            "type": "masmdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe",
-            "stopOnEntry": true
+            "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe"
           }
         ]
       }
@@ -143,18 +139,76 @@
           ],
           "default": "information",
           "description": "Severity level for secondary labels in diagnostics."
+        },
+        "masm.compilerPath": {
+          "type": "string",
+          "default": "ml.exe",
+          "description": "Path to the MASM compiler (e.g., ml.exe)."
+        },
+        "masm.linkerPath": {
+          "type": "string",
+          "default": "link.exe",
+          "description": "Path to the linker (e.g., link.exe)."
+        },
+        "masm.includePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "List of include directories passed to the compiler."
+        },
+        "masm.libPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "List of library directories passed to the linker."
         }
       }
-    }
+    },
+    "taskDefinitions": [
+      {
+        "type": "masmbuild",
+        "required": [
+          "files",
+          "output"
+        ],
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of .asm files to compile."
+          },
+          "output": {
+            "type": "string",
+            "description": "Name of the .exe output file."
+          },
+          "compilerArgs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extra compiler arguments."
+          },
+          "linkerArgs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extra linker arguments."
+          }
+        }
+      }
+    ]
   },
   "scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"lint": "eslint",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
-	},
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "lint": "eslint",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "test": "sh ./scripts/e2e.sh"
+  },
   "devDependencies": {
     "@types/node": "22.10.2",
     "@types/vscode": "^1.96.0",

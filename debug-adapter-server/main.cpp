@@ -30,13 +30,10 @@ public:
 
     // Command line arguments for the program.
     optional<array<string>> args;
-
-    // Whether to stop at the entry point of the program.
-    optional<boolean> stopOnEntry;
 };
 
 DAP_STRUCT_TYPEINFO_EXT(MyLaunchRequest, LaunchRequest, "launch", DAP_FIELD(program, "program"),
-                        DAP_FIELD(args, "args"), DAP_FIELD(stopOnEntry, "stopOnEntry"));
+                        DAP_FIELD(args, "args"));
 
 } // namespace dap
 

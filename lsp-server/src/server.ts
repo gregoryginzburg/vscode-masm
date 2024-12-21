@@ -39,6 +39,7 @@ const documents = new TextDocuments(TextDocument);
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
+let masmLintPath: string;
 
 connection.onInitialize((params: InitializeParams) => {
     const capabilities = params.capabilities;
@@ -56,6 +57,11 @@ connection.onInitialize((params: InitializeParams) => {
         capabilities.textDocument.publishDiagnostics &&
         capabilities.textDocument.publishDiagnostics.relatedInformation
     );
+    if (params.initializationOptions && params.initializationOptions.masmLintExePath) {
+        masmLintPath = params.initializationOptions.masmLintExePath;
+    } else {
+        masmLintPath = 'masmlint.exe'; // fallback
+    }
 
     const result: InitializeResult = {
         capabilities: {
@@ -64,6 +70,7 @@ connection.onInitialize((params: InitializeParams) => {
             completionProvider: {
                 resolveProvider: true
             },
+            hoverProvider: true,
             diagnosticProvider: {
                 interFileDependencies: false,
                 workspaceDiagnostics: false
@@ -287,7 +294,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
 
         // Adjust the path to your masmlint tool if needed
         const childProcess = exec(
-            `C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe --json --stdin "${filePath}"`,
+            `"${masmLintPath}" --json --stdin "${filePath}"`,
             (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error executing linter: ${error}`);
@@ -386,7 +393,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
         if (childProcess.stdin) {
             childProcess.stdin.write(textDocument.getText());
             childProcess.stdin.end();
-          }
+        }
     });
 }
 

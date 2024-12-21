@@ -16,6 +16,7 @@ const documents = new node_1.TextDocuments(vscode_languageserver_textdocument_1.
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
+let masmLintPath;
 connection.onInitialize((params) => {
     const capabilities = params.capabilities;
     // Does the client support the `workspace/configuration` request?
@@ -25,6 +26,12 @@ connection.onInitialize((params) => {
     hasDiagnosticRelatedInformationCapability = !!(capabilities.textDocument &&
         capabilities.textDocument.publishDiagnostics &&
         capabilities.textDocument.publishDiagnostics.relatedInformation);
+    if (params.initializationOptions && params.initializationOptions.masmLintExePath) {
+        masmLintPath = params.initializationOptions.masmLintExePath;
+    }
+    else {
+        masmLintPath = 'masmlint.exe'; // fallback
+    }
     const result = {
         capabilities: {
             textDocumentSync: node_1.TextDocumentSyncKind.Incremental,
@@ -32,6 +39,7 @@ connection.onInitialize((params) => {
             completionProvider: {
                 resolveProvider: true
             },
+            hoverProvider: true,
             diagnosticProvider: {
                 interFileDependencies: false,
                 workspaceDiagnostics: false
@@ -235,7 +243,7 @@ async function validateTextDocument(textDocument) {
     return new Promise((resolve) => {
         const diagnostics = [];
         // Adjust the path to your masmlint tool if needed
-        const childProcess = (0, child_process_1.exec)(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe --json --stdin "${filePath}"`, (error, stdout, stderr) => {
+        const childProcess = (0, child_process_1.exec)(`"${masmLintPath}" --json --stdin "${filePath}"`, (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error executing linter: ${error}`);
                 // Return whatever we have so far (possibly empty)
