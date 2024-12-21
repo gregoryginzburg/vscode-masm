@@ -1,65 +1,33 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import {
-    createConnection,
-    TextDocuments,
-    Diagnostic,
-    DiagnosticSeverity,
-    ProposedFeatures,
-    InitializeParams,
-    DidChangeConfigurationNotification,
-    CompletionItem,
-    CompletionItemKind,
-    TextDocumentPositionParams,
-    TextDocumentSyncKind,
-    InitializeResult,
-    DocumentDiagnosticReportKind,
-    type DocumentDiagnosticReport,
-    Hover,
-    HoverParams,
-    Position
-} from 'vscode-languageserver/node';
-
-import {
-    TextDocument
-} from 'vscode-languageserver-textdocument';
-
-import { exec } from 'child_process';
-import { URI } from 'vscode-uri';
-
+const node_1 = require("vscode-languageserver/node");
+const vscode_languageserver_textdocument_1 = require("vscode-languageserver-textdocument");
+const child_process_1 = require("child_process");
+const vscode_uri_1 = require("vscode-uri");
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
-
+const connection = (0, node_1.createConnection)(node_1.ProposedFeatures.all);
 // Create a simple text document manager.
-const documents = new TextDocuments(TextDocument);
-
+const documents = new node_1.TextDocuments(vscode_languageserver_textdocument_1.TextDocument);
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
-
-connection.onInitialize((params: InitializeParams) => {
+connection.onInitialize((params) => {
     const capabilities = params.capabilities;
-
     // Does the client support the `workspace/configuration` request?
     // If not, we fall back using global settings.
-    hasConfigurationCapability = !!(
-        capabilities.workspace && !!capabilities.workspace.configuration
-    );
-    hasWorkspaceFolderCapability = !!(
-        capabilities.workspace && !!capabilities.workspace.workspaceFolders
-    );
-    hasDiagnosticRelatedInformationCapability = !!(
-        capabilities.textDocument &&
+    hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
+    hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
+    hasDiagnosticRelatedInformationCapability = !!(capabilities.textDocument &&
         capabilities.textDocument.publishDiagnostics &&
-        capabilities.textDocument.publishDiagnostics.relatedInformation
-    );
-
-    const result: InitializeResult = {
+        capabilities.textDocument.publishDiagnostics.relatedInformation);
+    const result = {
         capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Incremental,
+            textDocumentSync: node_1.TextDocumentSyncKind.Incremental,
             // Tell the client that this server supports code completion.
             completionProvider: {
                 resolveProvider: true
@@ -79,11 +47,10 @@ connection.onInitialize((params: InitializeParams) => {
     }
     return result;
 });
-
 connection.onInitialized(() => {
     if (hasConfigurationCapability) {
         // Register for all configuration changes.
-        connection.client.register(DidChangeConfigurationNotification.type, undefined);
+        connection.client.register(node_1.DidChangeConfigurationNotification.type, undefined);
     }
     if (hasWorkspaceFolderCapability) {
         connection.workspace.onDidChangeWorkspaceFolders(_event => {
@@ -91,29 +58,22 @@ connection.onInitialized(() => {
         });
     }
 });
-
-// The example settings
-interface MasmServerSettings {
-    secondaryLabelSeverity: 'information' | 'hint';
-}
-
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: MasmServerSettings = {
+const defaultSettings = {
     secondaryLabelSeverity: 'information'
 };
 // Global settings (used if the client does NOT support workspace/configuration)
-let globalSettings: MasmServerSettings = defaultSettings;
-
+let globalSettings = defaultSettings;
 // Cache the settings of all open documents
-const documentSettings = new Map<string, Thenable<MasmServerSettings>>();
-
+const documentSettings = new Map();
 connection.onDidChangeConfiguration(change => {
     if (hasConfigurationCapability) {
         // Reset all cached document settings
         documentSettings.clear();
-    } else {
+    }
+    else {
         // Fallback: read from the changed settings or use defaults
         globalSettings = (change.settings.masmLanguageServer || defaultSettings);
     }
@@ -122,8 +82,7 @@ connection.onDidChangeConfiguration(change => {
     // to the existing setting, but this is out of scope for this example.
     connection.languages.diagnostics.refresh();
 });
-
-function getDocumentSettings(resource: string): Thenable<MasmServerSettings> {
+function getDocumentSettings(resource) {
     if (!hasConfigurationCapability) {
         return Promise.resolve(globalSettings);
     }
@@ -137,13 +96,10 @@ function getDocumentSettings(resource: string): Thenable<MasmServerSettings> {
     }
     return result;
 }
-
 // Only keep settings for open documents
 documents.onDidClose(e => {
     documentSettings.delete(e.document.uri);
 });
-
-
 // -------------------------- MASM data for completion & hover --------------------------
 const instructions = [
     { name: 'ADC', detail: 'Add with Carry', documentation: 'Adds the source operand and the carry flag to the destination operand.' },
@@ -209,7 +165,6 @@ const instructions = [
     { name: 'OUTCHAR', detail: 'Output Character', documentation: 'Outputs a character to the console.' },
     { name: 'NEWLINE', detail: 'New Line', documentation: 'Prints a newline character.' }
 ];
-
 const registers = [
     // ```masm\nmov eax, ebx\n``` - syntax highlthing works here
     { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.' },
@@ -247,202 +202,168 @@ const registers = [
     { name: 'GS', detail: 'GS Segment', documentation: 'GS segment register.' },
     { name: 'SS', detail: 'Stack Segment', documentation: 'Stack segment register.' }
 ];
-
 // Called when the client *pulls* for diagnostics
 connection.languages.diagnostics.on(async (params) => {
     const document = documents.get(params.textDocument.uri);
     if (document !== undefined) {
         return {
-            kind: DocumentDiagnosticReportKind.Full,
+            kind: node_1.DocumentDiagnosticReportKind.Full,
             items: await validateTextDocument(document)
-        } satisfies DocumentDiagnosticReport;
-    } else {
+        };
+    }
+    else {
         // We don't know the document. We can either try to read it from disk
         // or we don't report problems for it.
         return {
-            kind: DocumentDiagnosticReportKind.Full,
+            kind: node_1.DocumentDiagnosticReportKind.Full,
             items: []
-        } satisfies DocumentDiagnosticReport;
+        };
     }
 });
-
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
     validateTextDocument(change.document);
 });
-
-async function validateTextDocument(textDocument: TextDocument): Promise<Diagnostic[]> {
+async function validateTextDocument(textDocument) {
     const settings = await getDocumentSettings(textDocument.uri);
-
     // Our “secondary labels” can be either Information or Hint
-    const secondarySeverity =
-        settings.secondaryLabelSeverity === 'hint'
-            ? DiagnosticSeverity.Hint
-            : DiagnosticSeverity.Information;
-
-    const filePath = URI.parse(textDocument.uri).fsPath;
-    return new Promise<Diagnostic[]>((resolve) => {
-        const diagnostics: Diagnostic[] = [];
-
+    const secondarySeverity = settings.secondaryLabelSeverity === 'hint'
+        ? node_1.DiagnosticSeverity.Hint
+        : node_1.DiagnosticSeverity.Information;
+    const filePath = vscode_uri_1.URI.parse(textDocument.uri).fsPath;
+    return new Promise((resolve) => {
+        const diagnostics = [];
         // Adjust the path to your masmlint tool if needed
-        const childProcess = exec(
-            `C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe --json --stdin "${filePath}"`,
-            (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`Error executing linter: ${error}`);
-                    // Return whatever we have so far (possibly empty)
-                    return resolve(diagnostics);
-                }
-
-                try {
-                    const output = JSON.parse(stdout);
-
-                    for (const diag of output) {
-                        // Convert primary severity
-                        const diagnostic: Diagnostic = {
-                            severity:
-                                diag.severity === 'Error'
-                                    ? DiagnosticSeverity.Error
-                                    : diag.severity === 'Warning'
-                                        ? DiagnosticSeverity.Warning
-                                        : DiagnosticSeverity.Information,
+        const childProcess = (0, child_process_1.exec)(`C:\\Users\\grigo\\Documents\\MasmLint\\bin\\masmlint_dbg.exe --json --stdin "${filePath}"`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error executing linter: ${error}`);
+                // Return whatever we have so far (possibly empty)
+                return resolve(diagnostics);
+            }
+            try {
+                const output = JSON.parse(stdout);
+                for (const diag of output) {
+                    // Convert primary severity
+                    const diagnostic = {
+                        severity: diag.severity === 'Error'
+                            ? node_1.DiagnosticSeverity.Error
+                            : diag.severity === 'Warning'
+                                ? node_1.DiagnosticSeverity.Warning
+                                : node_1.DiagnosticSeverity.Information,
+                        range: {
+                            start: {
+                                line: diag.primaryLabel.span.start.line,
+                                character: diag.primaryLabel.span.start.character
+                            },
+                            end: {
+                                line: diag.primaryLabel.span.end.line,
+                                character: diag.primaryLabel.span.end.character
+                            }
+                        },
+                        message: diag.message,
+                        source: 'masmlint',
+                        relatedInformation: []
+                    };
+                    // Append primary label message if it exists
+                    if (diag.primaryLabel.message) {
+                        diagnostic.message += `\n${diag.primaryLabel.message}`;
+                    }
+                    // Append note if it exists
+                    if (diag.note_message) {
+                        diagnostic.message += `\nnote: ${diag.note_message}`;
+                    }
+                    // Handle secondary labels
+                    for (const secondaryLabel of diag.secondaryLabels) {
+                        const relatedInfoDiagnostic = {
+                            severity: secondarySeverity,
                             range: {
                                 start: {
-                                    line: diag.primaryLabel.span.start.line,
-                                    character: diag.primaryLabel.span.start.character
+                                    line: secondaryLabel.span.start.line,
+                                    character: secondaryLabel.span.start.character
                                 },
                                 end: {
-                                    line: diag.primaryLabel.span.end.line,
-                                    character: diag.primaryLabel.span.end.character
+                                    line: secondaryLabel.span.end.line,
+                                    character: secondaryLabel.span.end.character
                                 }
                             },
-                            message: diag.message,
+                            message: secondaryLabel.message,
                             source: 'masmlint',
-                            relatedInformation: []
-                        };
-
-                        // Append primary label message if it exists
-                        if (diag.primaryLabel.message) {
-                            diagnostic.message += `\n${diag.primaryLabel.message}`;
-                        }
-                        // Append note if it exists
-                        if (diag.note_message) {
-                            diagnostic.message += `\nnote: ${diag.note_message}`;
-                        }
-
-                        // Handle secondary labels
-                        for (const secondaryLabel of diag.secondaryLabels) {
-                            const relatedInfoDiagnostic: Diagnostic = {
-                                severity: secondarySeverity,
-                                range: {
-                                    start: {
-                                        line: secondaryLabel.span.start.line,
-                                        character: secondaryLabel.span.start.character
+                            relatedInformation: [
+                                {
+                                    location: {
+                                        uri: textDocument.uri,
+                                        range: diagnostic.range
                                     },
-                                    end: {
-                                        line: secondaryLabel.span.end.line,
-                                        character: secondaryLabel.span.end.character
-                                    }
-                                },
-                                message: secondaryLabel.message,
-                                source: 'masmlint',
-                                relatedInformation: [
-                                    {
-                                        location: {
-                                            uri: textDocument.uri,
-                                            range: diagnostic.range
-                                        },
-                                        message: 'Original error'
-                                    }
-                                ]
-                            };
-
-                            diagnostics.push(relatedInfoDiagnostic);
-
-                            // Also attach related info to the primary diagnostic
-                            diagnostic.relatedInformation?.push({
-                                location: {
-                                    uri: textDocument.uri,
-                                    range: relatedInfoDiagnostic.range
-                                },
-                                message: secondaryLabel.message
-                            });
-                        }
-
-                        diagnostics.push(diagnostic);
+                                    message: 'Original error'
+                                }
+                            ]
+                        };
+                        diagnostics.push(relatedInfoDiagnostic);
+                        // Also attach related info to the primary diagnostic
+                        diagnostic.relatedInformation?.push({
+                            location: {
+                                uri: textDocument.uri,
+                                range: relatedInfoDiagnostic.range
+                            },
+                            message: secondaryLabel.message
+                        });
                     }
-                } catch (e) {
-                    console.error(`Error parsing JSON output: ${e}`);
-                    console.error(`Stdout: ${stdout}`);
-                    console.error(`Stderr: ${stderr}`);
+                    diagnostics.push(diagnostic);
                 }
-
-                resolve(diagnostics);
             }
-        );
-
+            catch (e) {
+                console.error(`Error parsing JSON output: ${e}`);
+                console.error(`Stdout: ${stdout}`);
+                console.error(`Stderr: ${stderr}`);
+            }
+            resolve(diagnostics);
+        });
         // Send the document text to the linter via stdin
         if (childProcess.stdin) {
             childProcess.stdin.write(textDocument.getText());
             childProcess.stdin.end();
-          }
+        }
     });
 }
-
 connection.onDidChangeWatchedFiles(_change => {
     // Monitored files have change in VSCode
     connection.console.log('We received a file change event');
 });
-
 // This handler provides the initial list of the completion items.
-connection.onCompletion(
-    (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-        // Combine instructions + registers into a single list
-        const instrCompletions: CompletionItem[] = instructions.map(instr => ({
-            label: instr.name,
-            kind: CompletionItemKind.Keyword,
-            documentation: instr.documentation
-        }));
-        const registerCompletions: CompletionItem[] = registers.map(reg => ({
-            label: reg.name,
-            kind: CompletionItemKind.Variable,
-            documentation: reg.documentation
-        }));
-        return instrCompletions.concat(registerCompletions);
-    }
-);
-
+connection.onCompletion((_textDocumentPosition) => {
+    // Combine instructions + registers into a single list
+    const instrCompletions = instructions.map(instr => ({
+        label: instr.name,
+        kind: node_1.CompletionItemKind.Keyword,
+        documentation: instr.documentation
+    }));
+    const registerCompletions = registers.map(reg => ({
+        label: reg.name,
+        kind: node_1.CompletionItemKind.Variable,
+        documentation: reg.documentation
+    }));
+    return instrCompletions.concat(registerCompletions);
+});
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-    (item: CompletionItem): CompletionItem => {
-        return item;
-    }
-);
-
-
+connection.onCompletionResolve((item) => {
+    return item;
+});
 // -------------------------- Hover Provider --------------------------
-
-connection.onHover((params: HoverParams): Hover | null => {
+connection.onHover((params) => {
     const document = documents.get(params.textDocument.uri);
     if (!document) {
         return null;
     }
-
     const word = getWordAtPosition(document, params.position);
     if (!word) {
         return null;
     }
-
-    const found = [...instructions, ...registers].find(
-        (entry) => entry.name.toUpperCase() === word.toUpperCase()
-    );
-
+    const found = [...instructions, ...registers].find((entry) => entry.name.toUpperCase() === word.toUpperCase());
     if (!found) {
         return null;
     }
-
     return {
         contents: {
             kind: 'markdown',
@@ -450,31 +371,26 @@ connection.onHover((params: HoverParams): Hover | null => {
         }
     };
 });
-
 // Helper: extract word at cursor
-function getWordAtPosition(document: TextDocument, position: Position): string | null {
+function getWordAtPosition(document, position) {
     const text = document.getText();
     const offset = document.offsetAt(position);
-
     let start = offset;
     let end = offset;
-
     while (start > 0 && /\w/.test(text.charAt(start - 1))) {
         start--;
     }
     while (end < text.length && /\w/.test(text.charAt(end))) {
         end++;
     }
-
     if (start === end) {
         return null;
     }
     return text.substring(start, end);
 }
-
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
-
 // Listen on the connection
 connection.listen();
+//# sourceMappingURL=server.js.map

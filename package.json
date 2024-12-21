@@ -16,7 +16,7 @@
     "Programming Languages"
   ],
   "activationEvents": [],
-  "main": "./client/out/extension",
+  "main": "./client/out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -130,14 +130,31 @@
           }
         ]
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "MASM Extension Settings",
+      "properties": {
+        "masmLanguageServer.secondaryLabelSeverity": {
+          "type": "string",
+          "enum": [
+            "information",
+            "hint"
+          ],
+          "default": "information",
+          "description": "Severity level for secondary labels in diagnostics."
+        }
+      }
+    }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "lint": "eslint",
-    "watch": "tsc -watch -p ./"
-  },
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"lint": "eslint",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test": "sh ./scripts/e2e.sh"
+	},
   "devDependencies": {
     "@types/node": "22.10.2",
     "@types/vscode": "^1.96.0",

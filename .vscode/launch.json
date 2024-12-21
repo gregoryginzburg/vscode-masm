@@ -12,6 +12,7 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
+			"autoAttachChildProcesses": true,
 			"outFiles": [
 				"${workspaceRoot}/client/out/**/*.js",
 				"${workspaceRoot}/lsp-server/out/**/*.js"
