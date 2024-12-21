@@ -1,0 +1,13 @@
+{
+	"name": "lsp-masm-client",
+	"description": "VSCode part of a language server for MASM",
+	"license": "MIT",
+	"version": "0.0.1",
+	"publisher": "vscode",
+	"engines": {
+		"vscode": "^1.94.0"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
+	}
+}

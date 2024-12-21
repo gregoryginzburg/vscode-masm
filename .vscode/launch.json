@@ -11,7 +11,12 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}"
-			]
+			],
+			"outFiles": [
+				"${workspaceRoot}/client/out/**/*.js",
+				"${workspaceRoot}/lsp-server/out/**/*.js"
+			],
+			"preLaunchTask": "npm: watch"
 		},
 		{
             "name": "Server",

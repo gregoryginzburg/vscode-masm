@@ -1,0 +1,13 @@
+{
+	"name": "lsp-masm-server",
+	"description": "Masm language server",
+	"version": "1.0.0",
+	"license": "MIT",
+	"engines": {
+		"node": "*"
+	},
+	"scripts": {},
+	"dependencies": {
+		"vscode-languageserver": "^9.0.1"
+	}
+}

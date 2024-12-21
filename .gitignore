@@ -1,4 +1,4 @@
-node_modules
+node_modules/
 *.vsix
-debug-adapter/build
+debug-adapter-server/build
 *log.txt
