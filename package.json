@@ -122,7 +122,8 @@
             "name": "Debug MASM Program",
             "type": "masmdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe"
+            "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe",
+            "preLaunchTask": "Build"
           }
         ]
       }
@@ -139,6 +140,11 @@
           ],
           "default": "information",
           "description": "Severity level for secondary labels in diagnostics."
+        },
+        "masmLanguageServer.enableDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable diagnostics"
         },
         "masm.compilerPath": {
           "type": "string",

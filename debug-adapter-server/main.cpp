@@ -19,7 +19,7 @@
 #include <fstream>
 
 // #define USE_SERVER_MODE
-#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt" // TODO: remove in release
+// #define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt" // TODO: remove in release
 
 namespace dap {
 
@@ -46,7 +46,7 @@ static std::function<void(Debugger::Event)> createDebuggerEventHandler(const std
             dap::StoppedEvent stoppedEvent;
             stoppedEvent.threadId = 1;
             stoppedEvent.reason = "breakpoint";
-            std::cout << "Sent breakpoint hit event" << std::endl;
+            std::cerr << "Sent breakpoint hit event" << std::endl;
             session->send(stoppedEvent);
             break;
         }
@@ -94,7 +94,7 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
 {
 
     session->onError([&](const char *msg) {
-        printf("Session error: %s\n", msg);
+        std::cerr << "Session error: " << msg << "\n";
         {
             std::lock_guard<std::mutex> lock(state->mutex);
             state->terminate = true;
@@ -104,18 +104,18 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
 
     // Register DAP handlers
     session->registerHandler([&](const dap::InitializeRequest &) {
-        std::cout << "Enter InitializeRequest" << std::endl;
+        std::cerr << "Enter InitializeRequest" << std::endl;
         dap::InitializeResponse response;
         response.supportsConfigurationDoneRequest = true;
         response.supportsEvaluateForHovers = true;
         response.supportsExceptionInfoRequest = true;
 
-        std::cout << "Exit InitializeRequest\n" << std::endl;
+        std::cerr << "Exit InitializeRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::MyLaunchRequest &request) {
-        std::cout << "Enter LaunchRequest" << std::endl;
+        std::cerr << "Enter LaunchRequest" << std::endl;
         // Start the program
         std::string program = request.program;
         std::string args = "";
@@ -139,14 +139,14 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
     });
 
     session->registerHandler([&](const dap::ConfigurationDoneRequest &) {
-        std::cout << "Enter ConfigurationDoneRequest" << std::endl;
+        std::cerr << "Enter ConfigurationDoneRequest" << std::endl;
         debugger->configurationDone();
-        std::cout << "Exit ConfigurationDoneRequest\n" << std::endl;
+        std::cerr << "Exit ConfigurationDoneRequest\n" << std::endl;
         return dap::ConfigurationDoneResponse();
     });
 
     session->registerHandler([&](const dap::SetBreakpointsRequest &request) {
-        std::cout << "Enter SetBreakpointsRequest" << std::endl;
+        std::cerr << "Enter SetBreakpointsRequest" << std::endl;
         std::vector<dap::integer> lines;
         for (const auto &bp : request.breakpoints.value({})) {
             lines.push_back(bp.line);
@@ -163,33 +163,33 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
             breakpoint.line = line;
             response.breakpoints.push_back(breakpoint);
         }
-        std::cout << "Exit SetBreakpointsRequest\n" << std::endl;
+        std::cerr << "Exit SetBreakpointsRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::ThreadsRequest &) {
-        std::cout << "Enter ThreadsRequest" << std::endl;
+        std::cerr << "Enter ThreadsRequest" << std::endl;
         dap::ThreadsResponse response;
         dap::Thread thread;
         thread.id = 1;
         thread.name = "Main Thread";
         response.threads.push_back(thread);
-        std::cout << "Exit ThreadsRequest\n" << std::endl;
+        std::cerr << "Exit ThreadsRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::StackTraceRequest &) {
-        std::cout << "Enter StackTraceRequest" << std::endl;
+        std::cerr << "Enter StackTraceRequest" << std::endl;
         dap::StackTraceResponse response;
         if (debugger) {
             response.stackFrames = debugger->getCallStack();
         }
-        std::cout << "Exit StackTraceRequest\n" << std::endl;
+        std::cerr << "Exit StackTraceRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::ScopesRequest &) {
-        std::cout << "Enter ScopesRequest" << std::endl;
+        std::cerr << "Enter ScopesRequest" << std::endl;
         dap::ScopesResponse response;
 
         dap::Scope registersScope;
@@ -203,12 +203,12 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
         stackScope.variablesReference = 2;
         stackScope.presentationHint = "locals";
         response.scopes.push_back(stackScope);
-        std::cout << "Exit ScopesRequest\n" << std::endl;
+        std::cerr << "Exit ScopesRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::VariablesRequest &request) {
-        std::cout << "Enter VariablesRequest" << std::endl;
+        std::cerr << "Enter VariablesRequest" << std::endl;
         dap::VariablesResponse response;
         if (debugger) {
             if (request.variablesReference == 1) { // Registers
@@ -263,12 +263,12 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
                 }
             }
         }
-        std::cout << "Exit VariablesRequest\n" << std::endl;
+        std::cerr << "Exit VariablesRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::EvaluateRequest &request) {
-        std::cout << "Enter evaluate request: " << request.context.value("") << std::endl;
+        std::cerr << "Enter evaluate request: " << request.context.value("") << std::endl;
         dap::ResponseOrError<dap::EvaluateResponse> response;
         std::string expr = request.expression;
         std::string context = request.context.value("");
@@ -304,54 +304,54 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
     });
 
     session->registerHandler([&](const dap::ContinueRequest &) {
-        std::cout << "Enter ContinueRequest" << std::endl;
+        std::cerr << "Enter ContinueRequest" << std::endl;
         if (debugger) {
             debugger->run();
         }
         dap::ContinueResponse response;
         response.allThreadsContinued = true;
-        std::cout << "Exit ContinueRequest\n" << std::endl;
+        std::cerr << "Exit ContinueRequest\n" << std::endl;
         return response;
     });
 
     session->registerHandler([&](const dap::PauseRequest &) {
-        std::cout << "Enter PauseRequest" << std::endl;
+        std::cerr << "Enter PauseRequest" << std::endl;
         if (debugger) {
             debugger->pause();
         }
-        std::cout << "Exit PauseRequest\n" << std::endl;
+        std::cerr << "Exit PauseRequest\n" << std::endl;
         return dap::PauseResponse();
     });
 
     session->registerHandler([&](const dap::NextRequest &) {
-        std::cout << "Enter NextRequest" << std::endl;
+        std::cerr << "Enter NextRequest" << std::endl;
         if (debugger) {
             debugger->stepOver();
         }
-        std::cout << "Exit NextRequest\n" << std::endl;
+        std::cerr << "Exit NextRequest\n" << std::endl;
         return dap::NextResponse();
     });
 
     session->registerHandler([&](const dap::StepInRequest &) {
-        std::cout << "Enter StepInRequest" << std::endl;
+        std::cerr << "Enter StepInRequest" << std::endl;
         if (debugger) {
             debugger->stepInto();
         }
-        std::cout << "Exit StepInRequest\n" << std::endl;
+        std::cerr << "Exit StepInRequest\n" << std::endl;
         return dap::StepInResponse();
     });
 
     session->registerHandler([&](const dap::StepOutRequest &) {
-        std::cout << "Enter StepOutRequest" << std::endl;
+        std::cerr << "Enter StepOutRequest" << std::endl;
         if (debugger) {
             debugger->stepOut();
         }
-        std::cout << "Exit StepOutRequest\n" << std::endl;
+        std::cerr << "Exit StepOutRequest\n" << std::endl;
         return dap::StepOutResponse();
     });
 
     session->registerHandler([&](const dap::DisconnectRequest &) {
-        std::cout << "Enter DisconnectRequest" << std::endl;
+        std::cerr << "Enter DisconnectRequest" << std::endl;
         // Signal termination
 
         debugger->exit();
@@ -360,7 +360,7 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
             state->terminate = true;
         }
         state->cv.notify_one();
-        std::cout << "Exit DisconnectRequest\n" << std::endl;
+        std::cerr << "Exit DisconnectRequest\n" << std::endl;
         return dap::DisconnectResponse();
     });
 }
@@ -423,9 +423,9 @@ static int runStdioMode()
     debugger = std::make_shared<Debugger>(handler);
     setupSessionHandlers(session, state, debugger);
 
-    std::ofstream errorFile("C:\\Users\\grigo\\Documents\\masm\\error_log.txt", std::ios::out | std::ios::app); // TODO: remove in release
+    // std::ofstream errorFile("C:\\Users\\grigo\\Documents\\masm\\error_log.txt", std::ios::out | std::ios::app); // TODO: remove in release
     // Redirect std::cerr to the file
-    std::cerr.rdbuf(errorFile.rdbuf());
+    // std::cerr.rdbuf(errorFile.rdbuf());
 
     std::shared_ptr<dap::Reader> in = dap::file(stdin, false);
     std::shared_ptr<dap::Writer> out = dap::file(stdout, false);

@@ -27,8 +27,7 @@ public:
     STDMETHOD(Output)
     (ULONG /*Mask*/, PCSTR Text)
     {
-        // Optionally handle debugger output here
-        printf("%s", Text);
+        std::cerr << Text << "\n";
         return S_OK;
     }
 };
@@ -49,7 +48,7 @@ void Debugger::initialize()
     HRESULT hr;
     hr = DebugCreate(__uuidof(IDebugClient), (void **)&debugClient);
     if (FAILED(hr)) {
-        printf("DebugCreate failed: 0x%08X\n", hr);
+        fprintf(stderr, "DebugCreate failed: 0x%08X\n", hr);
         return;
     }
 
@@ -97,7 +96,7 @@ void Debugger::uninitialize()
     //     if (bp.second) {
     //         HRESULT hr = debugControl->RemoveBreakpoint(bp.second);
     //         if (FAILED(hr)) {
-    //             printf("IDebugControl3::RemoveBreakpoint failed: 0x%08X\n", hr);
+    //             fprintf(stderr, "IDebugControl3::RemoveBreakpoint failed: 0x%08X\n", hr);
     //         }
     //     }
     // }
@@ -142,7 +141,7 @@ void Debugger::launch(const std::string &program, const std::string &args)
     hr = debugClient->CreateProcess(NULL, const_cast<char *>(command.c_str()), DEBUG_PROCESS | CREATE_NEW_CONSOLE);
 
     if (FAILED(hr)) {
-        printf("CreateProcess failed: 0x%08X\n", hr);
+        fprintf(stderr, "CreateProcess failed: 0x%08X\n", hr);
         return;
     }
 
@@ -178,7 +177,7 @@ void Debugger::run()
     if (debugControl) {
         HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
         if (FAILED(hr)) {
-            printf("SetExecutionStatus(GO) failed: 0x%08X\n", hr);
+            fprintf(stderr, "SetExecutionStatus(GO) failed: 0x%08X\n", hr);
         } else {
             waitForEvent.fire();
         }
@@ -220,7 +219,7 @@ void Debugger::stepOver()
         // );
         HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_OVER);
         if (FAILED(hr)) {
-            printf("SetExecutionStatus(STEP_OVER) failed: 0x%08X\n", hr);
+            fprintf(stderr, "SetExecutionStatus(STEP_OVER) failed: 0x%08X\n", hr);
         } else {
             waitForEvent.fire();
         }
@@ -233,7 +232,7 @@ void Debugger::stepInto()
     if (debugControl) {
         HRESULT hr = debugControl->SetExecutionStatus(DEBUG_STATUS_STEP_INTO);
         if (FAILED(hr)) {
-            printf("SetExecutionStatus(STEP_INTO) failed: 0x%08X\n", hr);
+            fprintf(stderr, "SetExecutionStatus(STEP_INTO) failed: 0x%08X\n", hr);
         } else {
             waitForEvent.fire();
         }
@@ -251,7 +250,7 @@ void Debugger::stepOut()
     ULONG filled = 0;
     HRESULT hr = debugControl->GetStackTrace(0, 0, 0, frames, 1, &filled);
     if (FAILED(hr) || filled == 0) {
-        printf("GetStackTrace failed: 0x%08X\n", hr);
+        fprintf(stderr, "GetStackTrace failed: 0x%08X\n", hr);
         return;
     }
 
@@ -261,7 +260,7 @@ void Debugger::stepOut()
     IDebugBreakpoint *bp = nullptr;
     hr = debugControl->AddBreakpoint(DEBUG_BREAKPOINT_CODE, DEBUG_ANY_ID, &bp);
     if (FAILED(hr)) {
-        printf("AddBreakpoint failed: 0x%08X\n", hr);
+        fprintf(stderr, "AddBreakpoint failed: 0x%08X\n", hr);
         return;
     }
 
@@ -272,7 +271,7 @@ void Debugger::stepOut()
     // Continue execution
     hr = debugControl->SetExecutionStatus(DEBUG_STATUS_GO);
     if (FAILED(hr)) {
-        printf("SetExecutionStatus(GO) failed: 0x%08X\n", hr);
+        fprintf(stderr, "SetExecutionStatus(GO) failed: 0x%08X\n", hr);
     } else {
         waitForEvent.fire();
     }
@@ -312,7 +311,7 @@ std::vector<std::string> Debugger::getRegisters()
     ULONG numRegisters = 0;
     HRESULT hr = debugRegisters->GetNumberRegisters(&numRegisters);
     if (FAILED(hr)) {
-        printf("GetNumberRegisters failed: 0x%08X\n", hr);
+        fprintf(stderr, "GetNumberRegisters failed: 0x%08X\n", hr);
         return registers;
     }
 
@@ -348,7 +347,7 @@ std::vector<std::pair<std::string, std::string>> Debugger::getEflags()
 
     HRESULT hr = debugControl->Evaluate("efl", DEBUG_VALUE_INT32, &eflagsValue, nullptr);
     if (FAILED(hr) || eflagsValue.Type != DEBUG_VALUE_INT32) {
-        printf("Evaluate('eflags') failed or returned unsupported type: 0x%08X\n", hr);
+        fprintf(stderr, "Evaluate('eflags') failed or returned unsupported type: 0x%08X\n", hr);
         return eflagsArray;
     }
 
@@ -374,7 +373,7 @@ void Debugger::selectApplicationThread()
     std::vector<ULONG> threadIds(numThreads);
     hr = debugSystemObjects->GetThreadIdsByIndex(0, numThreads, threadIds.data(), nullptr);
     if (FAILED(hr)) {
-        printf("GetThreadIdsByIndex failed: 0x%08X\n", hr);
+        fprintf(stderr, "GetThreadIdsByIndex failed: 0x%08X\n", hr);
         return;
     }
 
@@ -403,7 +402,7 @@ std::vector<dap::StackFrame> Debugger::getCallStack()
     ULONG filled = 0;
     HRESULT hr = debugControl->GetStackTrace(0, 0, 0, frames, 100, &filled);
     if (FAILED(hr)) {
-        printf("GetStackTrace failed: 0x%08X\n", hr);
+        fprintf(stderr, "GetStackTrace failed: 0x%08X\n", hr);
         return stackFrames;
     }
 
@@ -451,7 +450,7 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
     ULONG64 sp = 0;
     HRESULT hr = debugRegisters->GetStackOffset(&sp);
     if (FAILED(hr)) {
-        printf("GetStackOffset failed: 0x%08X\n", hr);
+        fprintf(stderr, "GetStackOffset failed: 0x%08X\n", hr);
         return stackContents;
     }
 
@@ -497,7 +496,7 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
 
     hr = debugDataSpaces->ReadVirtual(address, stackData.data(), static_cast<ULONG>(stackData.size() * sizeof(ULONG32)), &bytesRead);
     if (FAILED(hr)) {
-        printf("ReadVirtual failed: 0x%08X\n", hr);
+        fprintf(stderr, "ReadVirtual failed: 0x%08X\n", hr);
         return stackContents;
     }
 
@@ -890,7 +889,7 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
     ULONG numRegisters = 0;
     hr = debugRegisters->GetNumberRegisters(&numRegisters);
     if (FAILED(hr)) {
-        printf("GetNumberRegisters failed: 0x%08X\n", hr);
+        fprintf(stderr, "GetNumberRegisters failed: 0x%08X\n", hr);
         return "<Error getting registers>";
     }
 
@@ -1012,7 +1011,7 @@ void Debugger::eventLoop()
             // Wait timed out, continue processing
             continue;
         } else if (FAILED(hr)) {
-            printf("WaitForEvent failed: 0x%08X\n", hr);
+            fprintf(stderr, "WaitForEvent failed: 0x%08X\n", hr);
             break;
         }
     }

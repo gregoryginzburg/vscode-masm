@@ -70,7 +70,8 @@ connection.onInitialized(() => {
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
 const defaultSettings = {
-    secondaryLabelSeverity: 'information'
+    secondaryLabelSeverity: 'information',
+    enableDiagnostics: true
 };
 // Global settings (used if the client does NOT support workspace/configuration)
 let globalSettings = defaultSettings;
@@ -214,6 +215,13 @@ const registers = [
 connection.languages.diagnostics.on(async (params) => {
     const document = documents.get(params.textDocument.uri);
     if (document !== undefined) {
+        const settings = await getDocumentSettings(document.uri);
+        if (!settings.enableDiagnostics) {
+            return {
+                kind: node_1.DocumentDiagnosticReportKind.Full,
+                items: []
+            };
+        }
         return {
             kind: node_1.DocumentDiagnosticReportKind.Full,
             items: await validateTextDocument(document)
@@ -235,6 +243,9 @@ documents.onDidChangeContent(change => {
 });
 async function validateTextDocument(textDocument) {
     const settings = await getDocumentSettings(textDocument.uri);
+    if (!settings.enableDiagnostics) {
+        return [];
+    }
     // Our “secondary labels” can be either Information or Hint
     const secondarySeverity = settings.secondaryLabelSeverity === 'hint'
         ? node_1.DiagnosticSeverity.Hint

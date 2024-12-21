@@ -102,13 +102,15 @@ connection.onInitialized(() => {
 // The example settings
 interface MasmServerSettings {
     secondaryLabelSeverity: 'information' | 'hint';
+    enableDiagnostics: boolean;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
 const defaultSettings: MasmServerSettings = {
-    secondaryLabelSeverity: 'information'
+    secondaryLabelSeverity: 'information',
+    enableDiagnostics: true
 };
 // Global settings (used if the client does NOT support workspace/configuration)
 let globalSettings: MasmServerSettings = defaultSettings;
@@ -259,6 +261,15 @@ const registers = [
 connection.languages.diagnostics.on(async (params) => {
     const document = documents.get(params.textDocument.uri);
     if (document !== undefined) {
+        const settings = await getDocumentSettings(document.uri);
+
+        if (!settings.enableDiagnostics) {
+            return {
+                kind: DocumentDiagnosticReportKind.Full,
+                items: []
+            } satisfies DocumentDiagnosticReport;
+        }
+
         return {
             kind: DocumentDiagnosticReportKind.Full,
             items: await validateTextDocument(document)
@@ -281,6 +292,10 @@ documents.onDidChangeContent(change => {
 
 async function validateTextDocument(textDocument: TextDocument): Promise<Diagnostic[]> {
     const settings = await getDocumentSettings(textDocument.uri);
+
+    if (!settings.enableDiagnostics) {
+        return [];
+    }
 
     // Our “secondary labels” can be either Information or Hint
     const secondarySeverity =

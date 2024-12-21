@@ -15,9 +15,9 @@ let client: LanguageClient;
 
 const defaultBuildTaskDefinition = {
   type: 'masmbuild',
-  label: 'Build & Compile ASM',
-  files: ['${fileBasenameNoExtension}.asm'],
-  output: '${fileBasenameNoExtension}.exe',
+  label: 'Build',
+  files: ['${workspaceFolder}\\${fileBasenameNoExtension}.asm'],
+  output: '${workspaceFolder}\\${fileBasenameNoExtension}.exe',
   compilerArgs: [
     "/c",
     "/coff",
@@ -28,8 +28,16 @@ const defaultBuildTaskDefinition = {
     "/SUBSYSTEM:CONSOLE",
     "/DEBUG",
     "/MACHINE:X86",
-    "C:\\Users\\grigo\\msvcrt.lib"
   ]
+};
+
+const defaultDebugConfig: vscode.DebugConfiguration = {
+  type: 'masmdbg',
+  request: 'launch',
+  name: 'Debug MASM Program',
+  // By default, use the workspaceFolder + fileBasenameNoExtension.exe
+  // This matches the default "output" from our tasks.json
+  program: '${workspaceFolder}/${fileBasenameNoExtension}.exe',
 };
 
 export function activate(context: ExtensionContext) {
@@ -215,7 +223,7 @@ function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.ShellExe
 
 /**
  * Ensures that .vscode/tasks.json exists, creating it if necessary
- * with a single default masmbuild task labeled "Build & Compile ASM".
+ * with a single default masmbuild task labeled "Build".
  */
 async function ensureTasksJsonExists(): Promise<void> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -250,7 +258,7 @@ async function ensureTasksJsonExists(): Promise<void> {
 /**
  * Command: "extension.runMasmFile"
  * - Ensures tasks.json exists
- * - Finds the "Build & Compile ASM" masmbuild task
+ * - Finds the "Build" masmbuild task
  * - Executes the build task to build the currently open .asm file
  */
 async function runMasmFile(): Promise<void> {
@@ -271,7 +279,7 @@ async function runMasmFile(): Promise<void> {
 
   await ensureTasksJsonExists();
 
-  const buildTaskLabel = 'Build & Compile ASM';
+  const buildTaskLabel = 'Build';
   const masmTasks = await vscode.tasks.fetchTasks({ type: 'masmbuild' });
   let buildTask = masmTasks.find(t => t.name === buildTaskLabel);
 
@@ -333,7 +341,7 @@ function executeExternalConsole(executablePath) {
 /**
  * Command: "extension.debugMasmFile"
  * - Ensures tasks.json exists
- * - Finds the "Build & Compile ASM" task and executes it
+ * - Finds the "Build" task and executes it
  * - Then starts a debug session using the "masmdbg" configuration
  */
 async function debugMasmFile(): Promise<void> {
@@ -354,7 +362,7 @@ async function debugMasmFile(): Promise<void> {
 
   await ensureTasksJsonExists();
 
-  const buildTaskLabel = 'Build & Compile ASM';
+  const buildTaskLabel = 'Build';
   const masmTasks = await vscode.tasks.fetchTasks({ type: 'masmbuild' });
   let buildTask = masmTasks.find(t => t.name === buildTaskLabel);
 
@@ -392,16 +400,7 @@ async function debugMasmFile(): Promise<void> {
     return;
   }
 
-  const debugConfig: vscode.DebugConfiguration = {
-    type: 'masmdbg',
-    request: 'launch',
-    name: 'Debug MASM Program',
-    // By default, use the workspaceFolder + fileBasenameNoExtension.exe
-    // This matches the default "output" from our tasks.json
-    program: '${workspaceFolder}/${fileBasenameNoExtension}.exe'
-  };
-
-  vscode.debug.startDebugging(undefined, debugConfig);
+  vscode.debug.startDebugging(undefined, defaultDebugConfig);
 }
 
 

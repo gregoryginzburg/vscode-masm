@@ -88,6 +88,7 @@
         "xutility": "cpp",
         "any": "cpp",
         "future": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "codecvt": "cpp"
     }
 }
