@@ -122,6 +122,8 @@ private:
     std::unordered_map<ULONG64, IDebugBreakpoint *> breakpoints;
     std::mutex debugMutex;
 
+    std::string programDirectory;
+
     // Event signaling
     ::Event hasInitialized;
     ::Event hasExited;

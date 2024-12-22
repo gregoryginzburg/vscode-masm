@@ -186,13 +186,13 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^\\$\\{workspaceFolder\\}(\\\\|/)[^\\/]+\\.[^\\/]+$"
+              "pattern": "^(\\$\\{[^}]+\\}(\\\\|/)?)?([^\\/]+(\\\\|/))*[^\\/]+\\.[^\\/]+$"
             },
             "description": "List of .asm files to compile. All files names must use only ASCII characters, end with .asm or .masm and be in the ${workspaceFolder}"
           },
           "output": {
             "type": "string",
-            "pattern": "^\\$\\{workspaceFolder\\}(\\\\|/)[^\\\\/]+\\.exe$",
+            "pattern": "^(.*)(\\\\|/)?[^\\/]+\\.exe$",
             "description": "Name of the .exe output file. Must use only ASCII characters, end with .exe and be in the ${workspaceFolder}"
           },
           "compilerArgs": {

@@ -148,7 +148,7 @@ void Debugger::launch(const std::string &program, const std::string &args)
     hr = debugControl->WaitForEvent(0, INFINITE);
     // hr = debugControl->SetEffectiveProcessorType(IMAGE_FILE_MACHINE_I386);
     //  Set symbol path as needed
-    std::string programDirectory = std::filesystem::path(program).parent_path().string();
+    programDirectory = std::filesystem::path(program).parent_path().string();
     hr = debugSymbols->SetSymbolPath(programDirectory.c_str());
     hr = debugSymbols->Reload("/f /i");
     hr = debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "sxe *", DEBUG_EXECUTE_DEFAULT);
@@ -422,11 +422,19 @@ std::vector<dap::StackFrame> Debugger::getCallStack()
             hr = debugSymbols->GetLineByOffset(frames[i].InstructionOffset, &line, fileName, sizeof(fileName), nullptr,
                                                nullptr);
             if (SUCCEEDED(hr)) {
+                std::filesystem::path filePath(fileName);
+
+                // If assembly file is compiled with relative path, in the pdb the path is also relative, 
+                // but vscode needs the full path to display the source, so prepend programDirectory if it's relative 
+                if (filePath.is_relative()) {
+                    filePath = std::filesystem::path(programDirectory) / filePath;
+                }
+
                 frame.line = line;
                 frame.column = 1;
                 frame.source = dap::Source();
                 frame.source->name = fileName;
-                frame.source->path = fileName;
+                frame.source->path = filePath.string();
             }
 
             stackFrames.push_back(frame);
@@ -494,7 +502,8 @@ std::vector<Debugger::StackEntry> Debugger::getStackContents()
     std::vector<ULONG32> stackData{};
     stackData.resize(numEntries);
 
-    hr = debugDataSpaces->ReadVirtual(address, stackData.data(), static_cast<ULONG>(stackData.size() * sizeof(ULONG32)), &bytesRead);
+    hr = debugDataSpaces->ReadVirtual(address, stackData.data(), static_cast<ULONG>(stackData.size() * sizeof(ULONG32)),
+                                      &bytesRead);
     if (FAILED(hr)) {
         fprintf(stderr, "ReadVirtual failed: 0x%08X\n", hr);
         return stackContents;
@@ -748,7 +757,8 @@ std::string Debugger::evaluateExpression(const std::string &expression)
 
         std::vector<uint8_t> memoryData(numElements * elementSize);
         ULONG bytesRead = 0;
-        hr = debugDataSpaces->ReadVirtual(baseAddress, memoryData.data(), static_cast<ULONG>(numElements * elementSize), &bytesRead);
+        hr = debugDataSpaces->ReadVirtual(baseAddress, memoryData.data(), static_cast<ULONG>(numElements * elementSize),
+                                          &bytesRead);
         if (FAILED(hr) || bytesRead < numElements * elementSize) {
             return "<Failed to read memory>";
         }
@@ -899,13 +909,15 @@ std::string Debugger::evaluateVariable(const std::string &variableName)
         hr = debugRegisters->GetDescription(i, name, sizeof(name), nullptr, nullptr);
         if (SUCCEEDED(hr)) {
             std::string regName(name);
-            std::transform(regName.begin(), regName.end(), regName.begin(), [](char c){ return static_cast<char>(::tolower(c));} );
+            std::transform(regName.begin(), regName.end(), regName.begin(),
+                           [](char c) { return static_cast<char>(::tolower(c)); });
             registerMap[regName] = i;
         }
     }
 
     std::string lowerRegisterName = variableName;
-    std::transform(lowerRegisterName.begin(), lowerRegisterName.end(), lowerRegisterName.begin(),[](char c){ return static_cast<char>(::tolower(c));} );
+    std::transform(lowerRegisterName.begin(), lowerRegisterName.end(), lowerRegisterName.begin(),
+                   [](char c) { return static_cast<char>(::tolower(c)); });
 
     auto it = registerMap.find(lowerRegisterName);
     if (it != registerMap.end()) {
