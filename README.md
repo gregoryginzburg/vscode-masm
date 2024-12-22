@@ -1,61 +1,79 @@
+# MASM Language VSCode Support
+
+MASM Language VSCode Support provides syntax highlighting, IntelliSense, debugging, and build automation for the Microsoft Macro Assembler (MASM) in Visual Studio Code.
+
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Syntax Highlighting**: Adds rich syntax highlighting for MASM `.asm` and `.masm` files.
+- **Code Completion**: Provides IntelliSense for MASM instructions and registers.
+- **Hover Documentation**: Displays detailed information about MASM instructions and registers on hover.
+- **Diagnostics**: Identifies and highlights errors or warnings in your assembly code.
+- **Build and Run**: Compile and run MASM programs directly from the editor.
+- **Debugging**: Includes a built-in debugger for running MASM programs with breakpoints.
 
-For example if there is an image subfolder under your extension project workspace:
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+### **Syntax Highlighting and IntelliSense**
+See MASM code highlighted and quickly view instructions and register suggestions as you type.
+![Syntax Highlighting and IntelliSense](assets/syntax-highlighting-intelliSense.gif)
 
 ---
 
-## Working with Markdown
+### **Diagnostics**
+See rich MASM diagnostics as you type.
+![Diagnostics](assets/diagnostics.gif)
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+---
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+### **Debugging**
+Debug your code easily.  
+![Hover Documentation](assets/debugging.gif)
 
-## For more information
+---
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+## Requirements
+- **Windows Operating System**: This extension works only on windows
+- **Microsoft Macro Assembler (MASM)**: Ensure `ml.exe` and `link.exe` are installed and accessible in your system's PATH.
+- **PowerShell**: Used for building and running tasks.
 
-**Enjoy!**
+## Extension Settings
+
+This extension contributes the following settings:
+
+- `masmLanguageServer.secondaryLabelSeverity`: Set severity level for secondary diagnostics labels (`information` or `hint`).
+- `masmLanguageServer.enableDiagnostics`: Enable or disable diagnostics.
+- `masm.compilerPath`: Path to the MASM compiler (`ml.exe`).
+- `masm.linkerPath`: Path to the MASM linker (`link.exe`).
+- `masm.includePaths`: List of include directories for the compiler.
+- `masm.libPaths`: List of library directories for the linker.
+
+## Commands
+
+- **Run MASM File** (`Ctrl+F5`): Compile and run the active MASM file.
+- **Debug MASM File** (`F5`): Compile and debug the active MASM file.
+
+## Keybindings
+
+- **Ctrl+F5**: Run MASM file.
+- **F5**: Debug MASM file.
+
+## Known Issues
+
+- The debugger currently supports only console applications.
+
+## Release Notes
+
+### 1.0.0
+
+- Initial release.
+
+---
+
+## Contributing
+
+We welcome contributions! Feel free to submit issues or pull requests at [GitHub Repository](https://github.com/gregoryginzburg/vscode-masm).
+
+## For More Information
+
+- [MASM Documentation](https://docs.microsoft.com/en-us/cpp/assembler/masm/)
+
+**Enjoy coding with MASM in VS Code!**

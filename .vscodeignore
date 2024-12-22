@@ -3,6 +3,8 @@
 .gitignore
 debug-adapter/**
 bin/MasmDebugAdapter.pdb
+debug-adapter-server/**
+assets/videos/**
 *.vsix
 *.zip
 vsc-extension-quickstart.md
