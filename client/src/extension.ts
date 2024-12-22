@@ -23,6 +23,7 @@ const defaultBuildTaskDefinition = {
     "/coff",
     "/Zi",
     "/Fl",
+    "/W3"
   ],
   linkerArgs: [
     "/SUBSYSTEM:CONSOLE",
@@ -185,7 +186,6 @@ function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.ShellExe
   const includePaths = config.get<string[]>('includePaths', []);
   const libPaths = config.get<string[]>('libPaths', []);
 
-
   // 2) Validate required fields
   if (!def.files || def.files.length === 0) {
     throw new Error('MASM build task: "files" must be a non-empty array.');
@@ -198,30 +198,33 @@ function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.ShellExe
   const linkerArgs = def.linkerArgs || [];
 
   // 3) Build compile commands
-  const includeFlags = includePaths.map(dir => `/I "${dir}"`);
-  const libFlags = libPaths.map(dir => `/LIBPATH:"${dir}"`);
-  const compileLines: string[] = [];
+  const includeFlags = includePaths.map(dir => `/I '${dir}'`);
+  const libFlags = libPaths.map(dir => `/LIBPATH:'${dir}'`);
+  const compileCommands: string[] = [];
 
   for (const asmFile of def.files) {
-    const cmd = `"${compilerPath}" /c ${includeFlags.join(' ')} ${compilerArgs.join(' ')} "${asmFile}"`;
-    compileLines.push(cmd);
+    // Use call operator '&' + quote the path:
+    // e.g. & "C:\some path\ml.exe" /c /I ...
+    const cmd = `& '${compilerPath}' /c ${includeFlags.join(' ')} ${compilerArgs.join(' ')} '${asmFile}'`;
+    compileCommands.push(cmd);
   }
 
   // 4) Build link command
   //    For each .asm file, we produce a .obj filename
   const objFiles = def.files.map(asm => {
     const base = path.basename(asm, path.extname(asm));
-    return `"${path.join(path.dirname(asm), base + '.obj')}"`;
+    return `'${path.join(path.dirname(asm), base + '.obj')}'`;
   });
-  const linkLine = `"${linkerPath}" ${objFiles.join(' ')} ${libFlags.join(' ')} /OUT:"${def.output}" ${linkerArgs.join(' ')}`;
 
-  // 5) Multi-line shell script
-  const shellCmd = compileLines.join(' && ') + ' && ' + linkLine;
+  // Again, use the call operator '&' + quote the path:
+  const linkCommand = `& '${linkerPath}' ${objFiles.join(' ')} ${libFlags.join(' ')} /OUT:'${def.output}' ${linkerArgs.join(' ')}`;
 
-  // Return a ShellExecution that runs them in sequence
+  // 5) Chain all commands with semicolons
+  const shellCmd = [...compileCommands, linkCommand].join(' ; ');
+
+  // Return a ShellExecution object that PowerShell will run
   return new vscode.ShellExecution(shellCmd);
 }
-
 /**
  * Ensures that .vscode/tasks.json exists, creating it if necessary
  * with a single default masmbuild task labeled "Build".
@@ -324,7 +327,7 @@ async function runMasmFile(): Promise<void> {
 
 function executeExternalConsole(executablePath) {
   // Use child_process to open a new command prompt and run the executable
-  const command = `start cmd.exe /V:ON /C "${executablePath} & echo. & echo. & echo ------------------ & echo (program exited with code: !ERRORLEVEL!) & <nul set /p=Press any key to close this window . . . & pause >nul"`;
+  const command = `start cmd.exe /V:ON /C ""${executablePath}" & echo. & echo. & echo ------------------ & echo (program exited with code: !ERRORLEVEL!) & <nul set /p=Press any key to close this window . . . & pause >nul"`;
 
 
   exec(command, (error, stdout, stderr) => {
