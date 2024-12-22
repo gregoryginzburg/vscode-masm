@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/gregoryginzburg/vscode-masm"
   },
+  "license": "MIT",
   "icon": "assets/icon1.png",
   "engines": {
     "vscode": "^1.96.0"

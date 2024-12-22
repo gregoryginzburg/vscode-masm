@@ -14,19 +14,19 @@ MASM Language VSCode Support provides syntax highlighting, IntelliSense, debuggi
 
 ### **Syntax Highlighting and IntelliSense**
 See MASM code highlighted and quickly view instructions and register suggestions as you type.
-![Syntax Highlighting and IntelliSense](assets/syntax-highlighting-intelliSense.gif)
+![Syntax Highlighting and IntelliSense](https://github.com/gregoryginzburg/vscode-masm/blob/master/assets/syntax-highlighting-intelliSense.gif?raw=true)
 
 ---
 
 ### **Diagnostics**
 See rich MASM diagnostics as you type.
-![Diagnostics](assets/diagnostics.gif)
+![Diagnostics](https://github.com/gregoryginzburg/vscode-masm/blob/master/assets/diagnostics.gif?raw=true)
 
 ---
 
 ### **Debugging**
 Debug your code easily.  
-![Hover Documentation](assets/debugging.gif)
+![Debugging](https://github.com/gregoryginzburg/vscode-masm/blob/master/assets/debugging.gif?raw=true)
 
 ---
 
