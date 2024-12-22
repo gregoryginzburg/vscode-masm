@@ -188,12 +188,12 @@
               "type": "string",
               "pattern": "^\\$\\{workspaceFolder\\}(\\\\|/)[^\\/]+\\.[^\\/]+$"
             },
-            "description": "List of .asm files to compile. All files names must end with .asm or .masm and be in the ${workspaceFolder}"
+            "description": "List of .asm files to compile. All files names must use only ASCII characters, end with .asm or .masm and be in the ${workspaceFolder}"
           },
           "output": {
             "type": "string",
             "pattern": "^\\$\\{workspaceFolder\\}(\\\\|/)[^\\\\/]+\\.exe$",
-            "description": "Name of the .exe output file. Must end with .exe and be in the ${workspaceFolder}"
+            "description": "Name of the .exe output file. Must use only ASCII characters, end with .exe and be in the ${workspaceFolder}"
           },
           "compilerArgs": {
             "type": "array",
