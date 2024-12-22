@@ -12,8 +12,8 @@ let client;
 const defaultBuildTaskDefinition = {
     type: 'masmbuild',
     label: 'Build',
-    files: ['${workspaceFolder}\\${fileBasenameNoExtension}.asm'],
-    output: '${workspaceFolder}\\${fileBasenameNoExtension}.exe',
+    files: ['${fileBasenameNoExtension}.asm'],
+    output: '${fileBasenameNoExtension}.exe',
     compilerArgs: [
         "/c",
         "/coff",
@@ -25,6 +25,7 @@ const defaultBuildTaskDefinition = {
         "/SUBSYSTEM:CONSOLE",
         "/DEBUG",
         "/MACHINE:X86",
+        "/W3"
     ]
 };
 const defaultDebugConfig = {
