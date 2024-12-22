@@ -158,13 +158,17 @@
         },
         "masm.includePaths": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "List of include directories passed to the compiler."
         },
         "masm.libPaths": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "List of library directories passed to the linker."
         }
@@ -181,13 +185,15 @@
           "files": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^\\$\\{workspaceFolder\\}(\\\\|/)[^\\/]+\\.[^\\/]+$"
             },
-            "description": "List of .asm files to compile."
+            "description": "List of .asm files to compile. All files names must end with .asm or .masm and be in the ${workspaceFolder}"
           },
           "output": {
             "type": "string",
-            "description": "Name of the .exe output file."
+            "pattern": "^\\$\\{workspaceFolder\\}(\\\\|/)[^\\\\/]+\\.exe$",
+            "description": "Name of the .exe output file. Must end with .exe and be in the ${workspaceFolder}"
           },
           "compilerArgs": {
             "type": "array",
@@ -203,6 +209,21 @@
             },
             "description": "Extra linker arguments."
           }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "masm-problem-matcher",
+        "owner": "masm",
+        "fileLocation": [
+          "absolute"
+        ],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\)\\s*:\\s*error\\s*(A\\d+):\\s*(.*)$",
+          "file": 1,
+          "line": 2,
+          "message": 4
         }
       }
     ]

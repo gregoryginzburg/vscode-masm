@@ -31,6 +31,7 @@ const defaultBuildTaskDefinition = {
   ]
 };
 
+
 const defaultDebugConfig: vscode.DebugConfiguration = {
   type: 'masmdbg',
   request: 'launch',
