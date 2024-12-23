@@ -19,7 +19,7 @@
 #include <fstream>
 
 // #define USE_SERVER_MODE
-// #define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt" // TODO: remove in release
+#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt" // TODO: remove in release
 
 namespace dap {
 
@@ -67,8 +67,8 @@ static std::function<void(Debugger::Event)> createDebuggerEventHandler(const std
         case Debugger::EventType::Exited: {
             dap::TerminatedEvent terminatedEvent;
             session->send(terminatedEvent);
-            dap::ExitedEvent exitedEvent;
-            session->send(exitedEvent);
+            // dap::ExitedEvent exitedEvent;
+            // session->send(exitedEvent);
 
             {
                 std::lock_guard<std::mutex> lock(state->mutex);
@@ -369,7 +369,6 @@ static void setupSessionHandlers(const std::shared_ptr<dap::Session> &session,
 static int runServerMode(int port)
 {
     auto server = dap::net::Server::create();
-
     auto onClientConnected = [port](const std::shared_ptr<dap::ReaderWriter> &socket) {
         auto uniqueSession = dap::Session::create();
         std::shared_ptr<dap::Session> session = std::move(uniqueSession);
@@ -390,10 +389,9 @@ static int runServerMode(int port)
         state->cv.wait(lock, [&] { return state->terminate; });
         std::cerr << "Client disconnected, server closing connection\n";
     };
-
     auto onError = [](const char *msg) { std::cerr << "Server error: " << msg << "\n"; };
-
     server->start(port, onClientConnected, onError);
+    std::cout << "Server started!\n"; 
 
     std::mutex m;
     std::condition_variable cv;

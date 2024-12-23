@@ -424,8 +424,8 @@ std::vector<dap::StackFrame> Debugger::getCallStack()
             if (SUCCEEDED(hr)) {
                 std::filesystem::path filePath(fileName);
 
-                // If assembly file is compiled with relative path, in the pdb the path is also relative, 
-                // but vscode needs the full path to display the source, so prepend programDirectory if it's relative 
+                // If assembly file is compiled with relative path, in the pdb the path is also relative,
+                // but vscode needs the full path to display the source, so prepend programDirectory if it's relative
                 if (filePath.is_relative()) {
                     filePath = std::filesystem::path(programDirectory) / filePath;
                 }
@@ -1000,6 +1000,11 @@ void Debugger::eventLoop()
         eventsHandledCnt += 1;
         if (eventsHandledCnt == 1) {
             hasInitialized.fire();
+        }
+
+        if (eventType == DEBUG_EVENT_EXIT_PROCESS) {
+            onEvent(EventType::Exited);
+            break;
         }
 
         if (eventType == DEBUG_EVENT_BREAKPOINT) {
