@@ -19,7 +19,7 @@
 #include <fstream>
 
 // #define USE_SERVER_MODE
-#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt" // TODO: remove in release
+#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt"
 
 namespace dap {
 

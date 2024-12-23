@@ -25,8 +25,8 @@ MASM Language VSCode Support provides syntax highlighting, IntelliSense, debuggi
 
 
 ## Requirements
-- **Windows Operating System**: This extension works only on windows
-- **Microsoft Macro Assembler (MASM)**: Ensure `ml.exe` and `link.exe` are installed and accessible in your system's PATH.
+- **Windows Operating System**: This extension works only on windows.
+- **Microsoft Macro Assembler (MASM)**: Ensure `ml.exe` and `link.exe` are installed and the path to them is specified in `masm.compilerPath` and `masm.linkerPath` extension settings.
 - **PowerShell**: Used for building and running tasks.
 
 ## Extension Settings
