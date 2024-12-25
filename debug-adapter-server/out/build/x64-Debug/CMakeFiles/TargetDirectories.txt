@@ -1,0 +1,12 @@
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/CMakeFiles/MasmDebugAdapter.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/CMakeFiles/list_install_components.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/CMakeFiles/install.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/CMakeFiles/install/local.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/cppdap/CMakeFiles/cppdap.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/cppdap/CMakeFiles/edit_cache.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/cppdap/CMakeFiles/rebuild_cache.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/cppdap/CMakeFiles/list_install_components.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/cppdap/CMakeFiles/install.dir
+C:/Users/grigo/Documents/masm/debug-adapter-server/out/build/x64-Debug/cppdap/CMakeFiles/install/local.dir

@@ -1,0 +1,1817 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/content_stream.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "37b4bf18f893076b09579936d58e9b7380c7b4afae5b3f481d5fb5c844eebba6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/content_stream.h"
+          },
+          "hashes": {
+            "sha-256": "fcf19ce3d6b237eddd325f7e5ce61987cb098e73d3e5c73c72d6c9e2b013e9d1"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/session.h"
+          },
+          "hashes": {
+            "sha-256": "2f7a6d1e6692d7220945bb65e8252a4815d1f6251e7716fbee0a9895e51e0891"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/future.h"
+          },
+          "hashes": {
+            "sha-256": "76ddaefb0ae447d4177b070be8f67d5df56b5bb425b2983bbfc03a165df359a0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/io.h"
+          },
+          "hashes": {
+            "sha-256": "dc34f25243b307a9518b9140fbef8459db27e273ae39b3e6672fb135c3fad464"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/traits.h"
+          },
+          "hashes": {
+            "sha-256": "38402c348bac22f1176fb05eb7998c7f4eb958e270a474cb6734280d31f72a70"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        }
+      ]
+    },
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/io.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "ff5b7e53c94868b3c9be7f1fd22dd277e0b765bd29cc2e13ed1c958b10552a63"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/io.h"
+          },
+          "hashes": {
+            "sha-256": "dc34f25243b307a9518b9140fbef8459db27e273ae39b3e6672fb135c3fad464"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C28020",
+          "message": {
+            "text": "The expression '0<=_Param_(1)&&_Param_(1)<=400-1' is not true at this call."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/output/serializer.hpp"
+                },
+                "region": {
+                  "startLine": 804,
+                  "startColumn": 28,
+                  "endLine": 804,
+                  "endColumn": 45
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "nlohmann::detail::serializer<nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer> >::decode",
+                  "decoratedName": "?decode@?$serializer@V?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@@nlohmann@@@detail@nlohmann@@CAEAEAEAEAIE@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/output/serializer.hpp"
+                          },
+                          "region": {
+                            "startLine": 784,
+                            "startColumn": 52
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/output/serializer.hpp"
+                          },
+                          "region": {
+                            "startLine": 804,
+                            "startColumn": 28
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer>::m_value' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/json.hpp"
+                },
+                "region": {
+                  "startLine": 1730,
+                  "startColumn": 5
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer>::{ctor}",
+                  "decoratedName": "??0?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@@nlohmann@@QEAA@AEBV?$json_ref@V?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@@nlohmann@@@detail@1@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer>::m_value"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer>::m_type' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/json.hpp"
+                },
+                "region": {
+                  "startLine": 1730,
+                  "startColumn": 5
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer>::{ctor}",
+                  "decoratedName": "??0?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@@nlohmann@@QEAA@AEBV?$json_ref@V?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@nlohmann@@@nlohmann@@@detail@1@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "nlohmann::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::adl_serializer>::m_type"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/output/serializer.hpp"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "f701061b36b12c8a02defba61d8f82a4d95ce1b357051e99f8bc2ce98475b93b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/json.hpp"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "7c4520b4215fffc8f8aad1ef43dff1b9027dec0398fde6b0bcb173cd650ab1bb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/nlohmann_json_serializer.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "c4260a830843e51636ac51390c5b8074241bf061ea743f0a5af589cd5a74f9c0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/nlohmann_json_serializer.h"
+          },
+          "hashes": {
+            "sha-256": "715ed9cd274f51a2b700c151ed66dc516ea7c65f7145a405e550d88487312ac1"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/json_fwd.hpp"
+          },
+          "hashes": {
+            "sha-256": "4dbcc129d044725842e28995215ba9792fa4cafa00245b661205357466c9e8eb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/null_json_serializer.h"
+          },
+          "hashes": {
+            "sha-256": "bf15d030c944eb7cdcb8cffe044030eeab01a662fc8a860650e68ee4ad583e64"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/adl_serializer.hpp"
+          },
+          "hashes": {
+            "sha-256": "88f3ff6e22e9cc5a5a5278c8039154766c5a95612262e8765887cff79294445a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/conversions/from_json.hpp"
+          },
+          "hashes": {
+            "sha-256": "1efe8a0e7d71751de71a1b82396450e5beab8ee41f3d03077be59aec0fb1e98a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/exceptions.hpp"
+          },
+          "hashes": {
+            "sha-256": "ef90b940ea60ef1106ccb123d24fd645b03bd816a46c5f30ee538a3b8d2437d9"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/input/position_t.hpp"
+          },
+          "hashes": {
+            "sha-256": "7999569d1a6dbff72c259cbf916cf26895adfac73db1e548f4150e68e00bcc03"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/macro_scope.hpp"
+          },
+          "hashes": {
+            "sha-256": "4914975eb18d8baeaa013254c90dc613ffea99f04ef82a10a004a6aa35c336cd"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/thirdparty/hedley/hedley.hpp"
+          },
+          "hashes": {
+            "sha-256": "ff00eb8c18b17e55749d97231f515d9072702bf2a1d3073345e432b4e6fe52b0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/meta/cpp_future.hpp"
+          },
+          "hashes": {
+            "sha-256": "2911fc26c712554f11f6ced6125f2fa7e7a2d93b6a0264dfe99d374e97014ff6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/meta/type_traits.hpp"
+          },
+          "hashes": {
+            "sha-256": "e0fc6b1f5cfab076d82be54f51dd63807632f73a1d81db706a15d428fa130863"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/iterators/iterator_traits.hpp"
+          },
+          "hashes": {
+            "sha-256": "435f8203d953f3f05ab8cb500ae9cf70e7ea0e2023abd2b21b71175d50d23d6d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/meta/void_t.hpp"
+          },
+          "hashes": {
+            "sha-256": "98c5f14e59908393d12175eaffb5dbd300109a39a4226c31273faaef506fbb85"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/meta/detected.hpp"
+          },
+          "hashes": {
+            "sha-256": "632d9f5ad159bf1712076a93c6e3f654b59b2134c446e2a74178ad390e11edd8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/value_t.hpp"
+          },
+          "hashes": {
+            "sha-256": "c0ae4d259286aaa496162b3542a2b18df1f4a1171dcc6b3c3c620c0adfd55745"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/conversions/to_json.hpp"
+          },
+          "hashes": {
+            "sha-256": "9d3c2e1b866a46d8b0238fa87822a4cbfe1c4da7848ddb8894eb725fcde7d30f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/iterators/iteration_proxy.hpp"
+          },
+          "hashes": {
+            "sha-256": "5011a6190f053b5f860e7b5515609e41d64604c6eb73a77f54e6159fe2340c1b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/input/binary_reader.hpp"
+          },
+          "hashes": {
+            "sha-256": "bb874112e9a829d2a6d15a02ea06617b746a66b6efa3ffe9b8745dc2642cb809"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/input/input_adapters.hpp"
+          },
+          "hashes": {
+            "sha-256": "aabbc19f23c1b02c4fecdf7f2e093992e3cac3e08d324268c0156022c69cc228"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/input/json_sax.hpp"
+          },
+          "hashes": {
+            "sha-256": "96c0ce7b38a1ca4b3da5d697e25eed294b87b0c5d3074c0c0e9dfb64f75645dd"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/meta/is_sax.hpp"
+          },
+          "hashes": {
+            "sha-256": "59d96efd69d37834a59c8fd3646b0345120997c610fd965133b2eefb1fbb508f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/input/lexer.hpp"
+          },
+          "hashes": {
+            "sha-256": "064bec00a0ffd7b96207612088bb9721fe18d11b8751b337202777aa62941108"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/input/parser.hpp"
+          },
+          "hashes": {
+            "sha-256": "66dffe21015445cc5f501b5079b65409cd1cd7079f152eedc26ac26f07a9de43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/iterators/internal_iterator.hpp"
+          },
+          "hashes": {
+            "sha-256": "193a44015ea9203d60a36af7a41d3d3af666c84f75324961030ca3cbe7dcac07"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/iterators/primitive_iterator.hpp"
+          },
+          "hashes": {
+            "sha-256": "3e0b61ec861da76a3cf30273dcb813066a46a3e931b1c102a1f6856f4c325700"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/iterators/iter_impl.hpp"
+          },
+          "hashes": {
+            "sha-256": "107933f65047dd0c52e775d350dc7db3c120318ec365cd8d6b217e09efa89dc6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/iterators/json_reverse_iterator.hpp"
+          },
+          "hashes": {
+            "sha-256": "39709f9fac6dcacc92606bd53d0e7afaa4b5e4c8c7e686ba12ccac7c9ed95f46"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/json_pointer.hpp"
+          },
+          "hashes": {
+            "sha-256": "cd7f3ed68ba1322e343f22063b031b125a64d4f4b5a58f3ff7119f822402ad90"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/json_ref.hpp"
+          },
+          "hashes": {
+            "sha-256": "16fa77d7a085d029518b3940efdc6c8445f22aa262604fb6d4087bc8c73efb03"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/output/binary_writer.hpp"
+          },
+          "hashes": {
+            "sha-256": "5f90de513e3ebb352f559bdc83c5d2db10a9df7e0fd36742103970d6b9f0ccd2"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/output/output_adapters.hpp"
+          },
+          "hashes": {
+            "sha-256": "37c152e105f35952434075ea7714474f92107816eebfa1516f31da8ab351a58b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/conversions/to_chars.hpp"
+          },
+          "hashes": {
+            "sha-256": "a04283c91438d38dd2b20eee8c8b0d3ddc2e8e7125252d656051a9317b9c32e3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/detail/macro_unscope.hpp"
+          },
+          "hashes": {
+            "sha-256": "9198d772240f25bcd53a5c1ad76ff9ac3faaf35c430546410f60646875fed1a6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/thirdparty/hedley/hedley_undef.hpp"
+          },
+          "hashes": {
+            "sha-256": "379668e2e0e583b5a52c2789420a47879343f6c3e122fa79a9671b201a1f9a5e"
+          }
+        }
+      ]
+    },
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/network.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "73c616c5778fba5c5160b379c7996e58852cb3e8162a3194dde3d906aab87776"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/network.h"
+          },
+          "hashes": {
+            "sha-256": "7ce3153b15e15bf7c21b072d44c7ec3a9ff6e90c1e64068aa54b663d70eb2b50"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/socket.h"
+          },
+          "hashes": {
+            "sha-256": "286ca8c2c7f23a4f40eee9c62bf21721c0d08e3e2d8ca7d9391d04dc201c522e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/io.h"
+          },
+          "hashes": {
+            "sha-256": "dc34f25243b307a9518b9140fbef8459db27e273ae39b3e6672fb135c3fad464"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/null_json_serializer.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "6dd9148a7943ee8cb9f0dc091cb653734b93fa5c2cdd2ffb47a4fa652134bd07"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/null_json_serializer.h"
+          },
+          "hashes": {
+            "sha-256": "bf15d030c944eb7cdcb8cffe044030eeab01a662fc8a860650e68ee4ad583e64"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/protocol_events.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "c801582216dc3e5d2507fe2fd6972781b6e62587a5cf20196aa904793d8a3e18"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/protocol_requests.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "3d68b0fec57e327a212e557261b5226f2f90f2ac795a233a1b1a55c2c2f95b2e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/protocol_response.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "f82933a7e95fbaab876af48aa881a7f7b83195df1ad791bdd9484d7d3d74d46b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/protocol_types.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "8c5e93757296d192058cc2e81112af9edde9b718d86c362efcf6bab37b694fde"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::any::buffer' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+                },
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 6
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::any::{ctor}",
+                  "decoratedName": "??0any@dap@@QEAA@AEBV01@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::any::buffer"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'dap::ContentReader::on_invalid_data' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/src/content_stream.h"
+                },
+                "region": {
+                  "startLine": 34,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "dap::ContentReader::{ctor}",
+                  "decoratedName": "??0ContentReader@dap@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "dap::ContentReader::on_invalid_data"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.41.34123.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/include/dap/any.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "b3ae27dcc0e92dfb62a57eda6faaa343b0236b3a66310f8fe9df45763aba62b5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/grigo/Documents/masm/debug-adapter-server/cppdap/src/content_stream.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "fcf19ce3d6b237eddd325f7e5ce61987cb098e73d3e5c73c72d6c9e2b013e9d1"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/session.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "98485c0e6bc1d32575be94438c89b876a31b5a33508bb706f857f74cb0ba90c3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/session.h"
+          },
+          "hashes": {
+            "sha-256": "2f7a6d1e6692d7220945bb65e8252a4815d1f6251e7716fbee0a9895e51e0891"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/future.h"
+          },
+          "hashes": {
+            "sha-256": "76ddaefb0ae447d4177b070be8f67d5df56b5bb425b2983bbfc03a165df359a0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/io.h"
+          },
+          "hashes": {
+            "sha-256": "dc34f25243b307a9518b9140fbef8459db27e273ae39b3e6672fb135c3fad464"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/traits.h"
+          },
+          "hashes": {
+            "sha-256": "38402c348bac22f1176fb05eb7998c7f4eb958e270a474cb6734280d31f72a70"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeinfo.h"
+          },
+          "hashes": {
+            "sha-256": "c2ffe3caaffd13790ae8b6fd305d6d7202be8a8705e72274659aa3630c438cac"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/typeof.h"
+          },
+          "hashes": {
+            "sha-256": "8ec23dde005045af1badeda79b1585d7f2a165fd5de5b14a0dc18411ecb01b04"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/types.h"
+          },
+          "hashes": {
+            "sha-256": "e708d23e093b1759dbc687f863ab85d19a79a7cbb94e46c51ad384cdfa35bc8d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/optional.h"
+          },
+          "hashes": {
+            "sha-256": "0a8512e255bee10292755145d9f1c539a6d8e55908cd39669d8ab4819677cc37"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/variant.h"
+          },
+          "hashes": {
+            "sha-256": "57234845f633fb480d690c9b796e71f396dbfbc211e6de0b13fba873e82ccf43"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/serialization.h"
+          },
+          "hashes": {
+            "sha-256": "c2722e70781f2bbeaba06f729c99f75f3fe58cc8a60f44d67e7dea54c8214d80"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/chan.h"
+          },
+          "hashes": {
+            "sha-256": "bc6be6c3a6f2c896bae7d1ce6d2dad8a3624212e9548de8abe26cf195487cd73"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/json_serializer.h"
+          },
+          "hashes": {
+            "sha-256": "535c4a7a4303176a906c271833d881a0eaafa423174ffad3fba01f92a98d3d4a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/nlohmann_json_serializer.h"
+          },
+          "hashes": {
+            "sha-256": "715ed9cd274f51a2b700c151ed66dc516ea7c65f7145a405e550d88487312ac1"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/include/dap/protocol.h"
+          },
+          "hashes": {
+            "sha-256": "67e7739e1c55a360577cd9ebada47af6fdd1342e9666ae8825135d328e2b6a23"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/third_party/json/include/nlohmann/json_fwd.hpp"
+          },
+          "hashes": {
+            "sha-256": "4dbcc129d044725842e28995215ba9792fa4cafa00245b661205357466c9e8eb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/grigo/documents/masm/debug-adapter-server/cppdap/src/socket.h"
+          },
+          "hashes": {
+            "sha-256": "286ca8c2c7f23a4f40eee9c62bf21721c0d08e3e2d8ca7d9391d04dc201c522e"
+          }
+        }
+      ]
+    }
+  ]
+}
