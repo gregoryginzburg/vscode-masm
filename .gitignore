@@ -2,4 +2,5 @@ node_modules/
 *.vsix
 debug-adapter-server/build
 *log.txt
+bin/**
 assets/videos/**
