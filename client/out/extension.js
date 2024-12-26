@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
+exports.createRealShellExecution = createRealShellExecution;
+exports.substituteVSCodeVariables = substituteVSCodeVariables;
 exports.deactivate = deactivate;
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const child_process_1 = require("child_process");
 const vscode = require("vscode");
 const vscode_1 = require("vscode");
@@ -125,30 +128,64 @@ function createRealShellExecution(def) {
     if (!def.output || !def.output.trim()) {
         throw new Error('MASM build task: "output" must be a valid string.');
     }
+    // Get the active editor & workspace folder
+    const editor = vscode.window.activeTextEditor;
+    const workspaceFolder = vscode.workspace.workspaceFolders
+        ? vscode.workspace.workspaceFolders[0]
+        : undefined;
+    // Expand variables in each array element & string
+    const expandedFiles = def.files.map(f => substituteVSCodeVariables(f, editor, workspaceFolder));
+    const expandedOutput = substituteVSCodeVariables(def.output, editor, workspaceFolder);
     const compilerArgs = def.compilerArgs || [];
     const linkerArgs = def.linkerArgs || [];
-    // 3) Build compile commands
-    const includeFlags = includePaths.map(dir => `/I '${dir}'`);
-    const libFlags = libPaths.map(dir => `/LIBPATH:'${dir}'`);
-    const compileCommands = [];
-    for (const asmFile of def.files) {
-        // Use call operator '&' + quote the path:
-        // e.g. & "C:\some path\ml.exe" /c /I ...
-        const cmd = `& '${compilerPath}' /c ${includeFlags.join(' ')} ${compilerArgs.join(' ')} '${asmFile}'`;
-        compileCommands.push(cmd);
+    // Build up the flags
+    const includeFlags = includePaths.map(dir => `/I "${dir}"`).join(' ');
+    const libFlags = libPaths.map(dir => `/LIBPATH:"${dir}"`).join(' ');
+    // 3) Build the .bat script contents
+    //    We’ll do:
+    //    1) ml.exe /c for each .asm file
+    //    2) link.exe all resulting .obj files
+    //    3) exit /B %errorlevel%
+    let batchContent = '@echo off\r\n';
+    batchContent += 'setlocal enabledelayedexpansion\r\n\r\n';
+    // For each ASM file, compile it
+    for (const asmFile of expandedFiles) {
+        batchContent += `"${compilerPath}" /c ${includeFlags} ${compilerArgs.join(' ')} "${asmFile}"\r\n`;
+        batchContent += `if errorlevel 1 goto errasm\r\n\r\n`;
     }
-    // 4) Build link command
-    //    For each .asm file, we produce a .obj filename
-    const objFiles = def.files.map(asm => {
-        const base = path.basename(asm, path.extname(asm));
-        return `'${path.join(path.dirname(asm), base + '.obj')}'`;
+    // Now link all .obj
+    const objFiles = expandedFiles.map(asm => {
+        const baseName = path.basename(asm, path.extname(asm));
+        const objFile = path.join(path.dirname(asm), baseName + '.obj');
+        return `"${objFile}"`;
     });
-    // Again, use the call operator '&' + quote the path:
-    const linkCommand = `& '${linkerPath}' ${objFiles.join(' ')} ${libFlags.join(' ')} /OUT:'${def.output}' ${linkerArgs.join(' ')}`;
-    // 5) Chain all commands with semicolons
-    const shellCmd = [...compileCommands, linkCommand].join(' ; ');
-    // Return a ShellExecution object that PowerShell will run
-    return new vscode.ShellExecution(shellCmd);
+    batchContent += `echo.\r\n`;
+    batchContent += `echo Linking to output ${expandedOutput}\r\n`;
+    batchContent += `"${linkerPath}" ${objFiles.join(' ')} ${libFlags} /OUT:"${expandedOutput}" ${linkerArgs.join(' ')}\r\n`;
+    batchContent += `if errorlevel 1 goto errlink\r\n\r\n`;
+    // Finally, exit with success
+    batchContent += `echo Build completed successfully!\r\n`;
+    batchContent += `goto TheEnd\r\n\r\n`;
+    batchContent += `:errlink\r\n`;
+    batchContent += `echo Linker error -- code %errorlevel%\r\n`;
+    batchContent += `goto TheEnd\r\n\r\n`;
+    batchContent += `:errasm\r\n`;
+    batchContent += `echo Assembler error -- code %errorlevel%\r\n`;
+    batchContent += `goto TheEnd\r\n\r\n`;
+    batchContent += `:TheEnd\r\n`;
+    batchContent += `exit /B %errorlevel%\r\n`;
+    // 4) Write the .bat file to a temp folder
+    const tempFolder = os.tmpdir();
+    const batFileName = `masmbuild_${Date.now()}.bat`;
+    const batFilePath = path.join(tempFolder, batFileName);
+    fs.writeFileSync(batFilePath, batchContent, { encoding: 'utf8' });
+    // 5) Create a ShellExecution that runs this .bat
+    const shellExec = new vscode.ShellExecution(`"${batFilePath}"`);
+    // 6) Store the batFilePath somewhere so we can delete it
+    //    after the task completes in onDidEndTaskProcess.
+    //    For example, you could attach it to the definition or a global variable:
+    def._tempBatFilePath = batFilePath;
+    return shellExec;
 }
 /**
  * Ensures that .vscode/tasks.json exists, creating it if necessary
@@ -202,13 +239,17 @@ async function runMasmFile() {
     const buildTaskLabel = 'Build';
     const masmTasks = await vscode.tasks.fetchTasks({ type: 'masmbuild' });
     let buildTask = masmTasks.find(t => t.name === buildTaskLabel);
+    let definition = undefined;
     if (!buildTask) {
-        const definition = defaultBuildTaskDefinition;
-        buildTask = new vscode.Task(definition, vscode.TaskScope.Workspace, // or TaskScope.Global
-        buildTaskLabel, // name/label
-        'masmbuild', // source
-        createRealShellExecution(definition));
+        definition = defaultBuildTaskDefinition;
     }
+    else {
+        definition = buildTask.definition;
+    }
+    buildTask = new vscode.Task(definition, vscode.TaskScope.Workspace, // or TaskScope.Global
+    buildTaskLabel, // name/label
+    'masmbuild', // source
+    createRealShellExecution(definition));
     const buildExecution = await vscode.tasks.executeTask(buildTask);
     // 2) Wait for the build to complete
     //    We'll wrap the event-based callback in a Promise
@@ -223,6 +264,16 @@ async function runMasmFile() {
     });
     // 3) If exit code is 0, start running
     const exitCode = await buildFinished;
+    // Now that the build is done, delete the .bat file (if it was set)
+    const def = definition;
+    if (def._tempBatFilePath) {
+        try {
+            fs.unlinkSync(def._tempBatFilePath);
+        }
+        catch (err) {
+            console.warn(`Failed to delete temp .bat file: ${err}`);
+        }
+    }
     if (exitCode !== 0) {
         vscode.window.showErrorMessage(`Build failed with exit code ${exitCode}.`);
         return;
@@ -268,13 +319,17 @@ async function debugMasmFile() {
     const buildTaskLabel = 'Build';
     const masmTasks = await vscode.tasks.fetchTasks({ type: 'masmbuild' });
     let buildTask = masmTasks.find(t => t.name === buildTaskLabel);
+    let definition = undefined;
     if (!buildTask) {
-        const definition = defaultBuildTaskDefinition;
-        buildTask = new vscode.Task(definition, vscode.TaskScope.Workspace, // or TaskScope.Global
-        buildTaskLabel, // name/label
-        'masmbuild', // source
-        createRealShellExecution(definition));
+        definition = defaultBuildTaskDefinition;
     }
+    else {
+        definition = buildTask.definition;
+    }
+    buildTask = new vscode.Task(definition, vscode.TaskScope.Workspace, // or TaskScope.Global
+    buildTaskLabel, // name/label
+    'masmbuild', // source
+    createRealShellExecution(definition));
     // 1) Kick off the build
     const buildExecution = await vscode.tasks.executeTask(buildTask);
     // 2) Wait for the build to complete
@@ -290,11 +345,110 @@ async function debugMasmFile() {
     });
     // 3) If exit code is 0, start debugging
     const exitCode = await buildFinished;
+    const def = definition;
+    if (def._tempBatFilePath) {
+        try {
+            fs.unlinkSync(def._tempBatFilePath);
+        }
+        catch (err) {
+            console.warn(`Failed to delete temp .bat file: ${err}`);
+        }
+    }
     if (exitCode !== 0) {
         vscode.window.showErrorMessage(`Build failed with exit code ${exitCode}. Aborting debug.`);
         return;
     }
     vscode.debug.startDebugging(undefined, defaultDebugConfig);
+}
+/**
+ * Expand common VS Code variables in a string, like:
+ *   - ${workspaceFolder}
+ *   - ${file}
+ *   - ${fileBasenameNoExtension}
+ *   - ...
+ *
+ * @param input A string containing the variables to be substituted
+ * @param editor The active text editor (if relevant to your substitution)
+ * @param workspaceFolder The workspace folder (if available)
+ * @returns The input string with recognized variables replaced
+ */
+function substituteVSCodeVariables(input, editor, workspaceFolder) {
+    // 1) Initialize some “global” values:
+    const userHome = os.homedir();
+    const execPath = process.execPath; // location of Code.exe (or code binary)
+    // 2) If no workspaceFolder is provided, try the first one
+    if (!workspaceFolder && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+        workspaceFolder = vscode.workspace.workspaceFolders[0];
+    }
+    // 3) Gather file-specific info if editor/document is available
+    const doc = editor?.document;
+    let file;
+    let fileDirname;
+    let fileBasename;
+    let fileExtname;
+    let fileBasenameNoExtension;
+    let fileWorkspaceFolder;
+    let relativeFile;
+    let relativeFileDirname;
+    let lineNumber;
+    let selectedText;
+    if (doc?.uri?.scheme === 'file') {
+        file = doc.uri.fsPath;
+        fileDirname = path.dirname(file);
+        fileBasename = path.basename(file);
+        fileExtname = path.extname(file);
+        fileBasenameNoExtension = path.basename(file, fileExtname || undefined);
+        // If we know the workspace folder, find relative path
+        if (workspaceFolder) {
+            const wkFolderPath = workspaceFolder.uri.fsPath;
+            fileWorkspaceFolder = wkFolderPath; // e.g. /home/user/workspace
+            if (file.startsWith(wkFolderPath)) {
+                // substring after the workspace path
+                const rel = path.relative(wkFolderPath, file); // e.g. folder/file.ext
+                relativeFile = rel;
+                relativeFileDirname = path.dirname(rel); // e.g. folder
+            }
+        }
+        // Cursor line number
+        if (editor?.selection) {
+            lineNumber = `${editor.selection.active.line + 1}`;
+        }
+        // Selected text
+        if (editor?.selection && !editor.selection.isEmpty) {
+            selectedText = doc.getText(editor.selection);
+        }
+    }
+    // 4) Expand workspace folder variables
+    const resolvedWorkspaceFolder = workspaceFolder?.uri.fsPath || '';
+    const workspaceFolderBasename = workspaceFolder
+        ? path.basename(workspaceFolder.uri.fsPath)
+        : '';
+    // 5) Create a map of the variable expansions
+    const substitutions = {
+        '${userHome}': userHome,
+        '${execPath}': execPath,
+        '${workspaceFolder}': resolvedWorkspaceFolder,
+        '${workspaceFolderBasename}': workspaceFolderBasename,
+        '${file}': file || '',
+        '${fileWorkspaceFolder}': fileWorkspaceFolder || '',
+        '${fileDirname}': fileDirname || '',
+        '${fileBasename}': fileBasename || '',
+        '${fileExtname}': fileExtname || '',
+        '${fileBasenameNoExtension}': fileBasenameNoExtension || '',
+        '${relativeFile}': relativeFile || '',
+        '${relativeFileDirname}': relativeFileDirname || '',
+        '${lineNumber}': lineNumber || '',
+        '${selectedText}': selectedText || '',
+        // Path separator
+        '${pathSeparator}': path.sep
+    };
+    // 6) Perform the substitutions
+    let output = input;
+    for (const [variable, value] of Object.entries(substitutions)) {
+        // Replace all occurrences of the variable
+        output = output.split(variable).join(value);
+    }
+    return output;
 }
 function deactivate() {
     if (!client) {
