@@ -11,7 +11,7 @@
   "license": "MIT",
   "icon": "assets/icon1.png",
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
     "Programming Languages"
@@ -218,7 +218,7 @@
         "name": "masm-problem-matcher",
         "owner": "masm",
         "fileLocation": [
-          "absolute"
+          "relative", "${workspaceFolder}"
         ],
         "pattern": {
           "regexp": "^(.*)\\((\\d+)\\)\\s*:\\s*(warning|(?:fatal\\s*)?error)\\s*(A\\d+):\\s*(.*)$",
@@ -242,7 +242,7 @@
   },
   "devDependencies": {
     "@types/node": "22.10.2",
-    "@types/vscode": "^1.96.0",
+    "@types/vscode": "^1.85.0",
     "typescript": "^5.7.2"
   }
 }
