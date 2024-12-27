@@ -2,14 +2,14 @@
   "name": "masm-vscode",
   "displayName": "MASM Language VSCode Support",
   "description": "",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "gregoryginzburg",
   "repository": {
     "type": "git",
     "url": "https://github.com/gregoryginzburg/vscode-masm"
   },
   "license": "MIT",
-  "icon": "assets/icon1.png",
+  "icon": "assets/icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },

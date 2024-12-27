@@ -4,7 +4,7 @@
 debug-adapter/**
 bin/MasmDebugAdapter.pdb
 debug-adapter-server/**
-assets/videos/**
+assets/extra/**
 *.vsix
 *.zip
 vsc-extension-quickstart.md
