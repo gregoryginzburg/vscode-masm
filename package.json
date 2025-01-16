@@ -2,7 +2,7 @@
   "name": "masm-vscode",
   "displayName": "MASM Language VSCode Support",
   "description": "",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "gregoryginzburg",
   "repository": {
     "type": "git",

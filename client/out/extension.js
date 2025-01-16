@@ -15,7 +15,7 @@ let client;
 const defaultBuildTaskDefinition = {
     type: 'masmbuild',
     label: 'Build',
-    files: ['${fileBasenameNoExtension}.asm'],
+    files: ['${file}'],
     output: '${fileBasenameNoExtension}.exe',
     compilerArgs: [
         "/c",
@@ -144,7 +144,7 @@ function createRealShellExecution(def) {
         throw new Error('MASM build task: "output" must be a valid string.');
     }
     // Expand variables in each array element & string
-    const expandedFiles = def.files.map(f => substituteVSCodeVariables(f, editor, workspaceFolder));
+    const expandedFiles = ensureFullPaths(def.files.map(f => substituteVSCodeVariables(f, editor, workspaceFolder)));
     const expandedOutput = substituteVSCodeVariables(def.output, editor, workspaceFolder);
     const compilerArgs = def.compilerArgs || [];
     const linkerArgs = def.linkerArgs || [];
