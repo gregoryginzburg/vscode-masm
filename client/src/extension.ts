@@ -30,7 +30,6 @@ const defaultBuildTaskDefinition = {
     "/SUBSYSTEM:CONSOLE",
     "/DEBUG",
     "/MACHINE:X86",
-    "/W3"
   ]
 };
 
@@ -41,7 +40,7 @@ const defaultDebugConfig: vscode.DebugConfiguration = {
   name: 'Debug MASM Program',
   // By default, use the workspaceFolder + fileBasenameNoExtension.exe
   // This matches the default "output" from our tasks.json
-  program: '${workspaceFolder}/${fileBasenameNoExtension}.exe',
+  // program: '${workspaceFolder}/${fileBasenameNoExtension}.exe',
 };
 
 export function activate(context: ExtensionContext) {
@@ -181,12 +180,31 @@ interface MasmbuildTaskDefinition extends vscode.TaskDefinition {
  *     using user/workspace settings for compilerPath, linkerPath, etc.
  */
 export function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.ShellExecution {
+  // Get the active editor & workspace folder
+  const editor = vscode.window.activeTextEditor;
+  const workspaceFolder = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0]
+    : undefined;
+
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage('No workspace folder open.');
+    return;
+  }
+
+  let workspaceFolderPath = workspaceFolder.uri.fsPath;
+  function ensureFullPath(dir: string) {
+    return path.isAbsolute(dir) ? dir : path.join(workspaceFolderPath, dir);
+  }
+  function ensureFullPaths(dirs: string[]) {
+    return dirs.map(dir => ensureFullPath(dir));
+  }
+
   // 1) Get user/workspace settings
   const config = vscode.workspace.getConfiguration('masm');
-  const compilerPath = config.get<string>('compilerPath', 'ml.exe');
-  const linkerPath = config.get<string>('linkerPath', 'link.exe');
-  const includePaths = config.get<string[]>('includePaths', []);
-  const libPaths = config.get<string[]>('libPaths', []);
+  const compilerPath = ensureFullPath(config.get<string>('compilerPath', 'ml.exe'));
+  const linkerPath = ensureFullPath(config.get<string>('linkerPath', 'link.exe'));
+  const includePaths = ensureFullPaths(config.get<string[]>('includePaths', []));
+  const libPaths = ensureFullPaths(config.get<string[]>('libPaths', []));
 
   // 2) Validate required fields
   if (!def.files || def.files.length === 0) {
@@ -196,11 +214,7 @@ export function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.S
     throw new Error('MASM build task: "output" must be a valid string.');
   }
 
-  // Get the active editor & workspace folder
-  const editor = vscode.window.activeTextEditor;
-  const workspaceFolder = vscode.workspace.workspaceFolders
-    ? vscode.workspace.workspaceFolders[0]
-    : undefined;
+
 
   // Expand variables in each array element & string
   const expandedFiles = def.files.map(f =>
@@ -208,13 +222,17 @@ export function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.S
   );
   const expandedOutput = substituteVSCodeVariables(def.output, editor, workspaceFolder);
 
-
   const compilerArgs = def.compilerArgs || [];
   const linkerArgs = def.linkerArgs || [];
 
   // Build up the flags
-  const includeFlags = includePaths.map(dir => `/I "${dir}"`).join(' ');
-  const libFlags = libPaths.map(dir => `/LIBPATH:"${dir}"`).join(' ');
+  const includeFlags = includePaths
+    .map(dir => `/I "${dir}"`)
+    .join(' ');
+
+  const libFlags = libPaths
+    .map(dir => `/LIBPATH:"${dir}"`)
+    .join(' ');
 
   // 3) Build the .bat script contents
   //    We’ll do:
@@ -226,9 +244,13 @@ export function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.S
 
   // For each ASM file, compile it
   for (const asmFile of expandedFiles) {
+    let folderPath = path.dirname(asmFile);
+    batchContent += `cd "${folderPath}"\r\n`
     batchContent += `"${compilerPath}" /c ${includeFlags} ${compilerArgs.join(' ')} "${asmFile}"\r\n`;
     batchContent += `if errorlevel 1 goto errasm\r\n\r\n`;
   }
+
+  batchContent += `cd "${workspaceFolderPath}"\r\n`
 
   // Now link all .obj
   const objFiles = expandedFiles.map(asm => {
@@ -320,6 +342,14 @@ async function runMasmFile(): Promise<void> {
     vscode.window.showErrorMessage('No active MASM file to debug!');
     return;
   }
+  const workspaceFolder = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0]
+    : undefined;
+
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage('No workspace folder open.');
+    return;
+  }
 
   const document = editor.document;
   if (document.languageId !== 'masm') {
@@ -327,8 +357,14 @@ async function runMasmFile(): Promise<void> {
     return;
   }
 
-  // Save the file before running
-  await document.save();
+  // Save all files before running
+  const openDocuments = vscode.workspace.textDocuments;
+
+  for (const document of openDocuments) {
+    if (document.isDirty) { // Only save if the document has unsaved changes
+      await document.save();
+    }
+  }
 
   await ensureTasksJsonExists();
 
@@ -382,10 +418,12 @@ async function runMasmFile(): Promise<void> {
     return;
   }
 
-  const filePath = document.fileName;
-  const outputFilePath = filePath.replace(path.extname(filePath), '.exe');
+  let workspaceFolderPath = workspaceFolder.uri.fsPath;
+  function ensureFullPath(dir: string) {
+    return path.isAbsolute(dir) ? dir : path.join(workspaceFolderPath, dir);
+  }
+  const outputFilePath = ensureFullPath(substituteVSCodeVariables(definition.output, editor, workspaceFolder));
   executeExternalConsole(outputFilePath);
-
 }
 
 function executeExternalConsole(executablePath) {
@@ -417,6 +455,14 @@ async function debugMasmFile(): Promise<void> {
     vscode.window.showErrorMessage('No active MASM file to debug!');
     return;
   }
+  const workspaceFolder = vscode.workspace.workspaceFolders
+    ? vscode.workspace.workspaceFolders[0]
+    : undefined;
+
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage('No workspace folder open.');
+    return;
+  }
 
   const document = editor.document;
   if (document.languageId !== 'masm') {
@@ -424,8 +470,14 @@ async function debugMasmFile(): Promise<void> {
     return;
   }
 
-  // Save the file before debugging
-  await document.save();
+  // Save all files before running
+  const openDocuments = vscode.workspace.textDocuments;
+
+  for (const document of openDocuments) {
+    if (document.isDirty) { // Only save if the document has unsaved changes
+      await document.save();
+    }
+  }
 
   await ensureTasksJsonExists();
 
@@ -480,6 +532,12 @@ async function debugMasmFile(): Promise<void> {
     return;
   }
 
+  let debugConfig = defaultDebugConfig;
+  let workspaceFolderPath = workspaceFolder.uri.fsPath;
+  function ensureFullPath(dir: string) {
+    return path.isAbsolute(dir) ? dir : path.join(workspaceFolderPath, dir);
+  }
+  debugConfig.program = ensureFullPath(substituteVSCodeVariables(definition.output, editor, workspaceFolder));
   vscode.debug.startDebugging(undefined, defaultDebugConfig);
 }
 

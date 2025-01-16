@@ -281,7 +281,7 @@ async function validateTextDocument(textDocument) {
                             }
                         },
                         message: diag.message,
-                        source: 'masmlint',
+                        source: '',
                         relatedInformation: []
                     };
                     // Append primary label message if it exists

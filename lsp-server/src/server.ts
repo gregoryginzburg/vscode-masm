@@ -340,7 +340,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
                                 }
                             },
                             message: diag.message,
-                            source: 'masmlint',
+                            source: '',
                             relatedInformation: []
                         };
 
