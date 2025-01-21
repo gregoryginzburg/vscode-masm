@@ -4,3 +4,4 @@ debug-adapter-server/build
 *log.txt
 bin/
 assets/videos/**
+out/

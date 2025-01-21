@@ -238,9 +238,9 @@ connection.languages.diagnostics.on(async (params) => {
 });
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-    validateTextDocument(change.document);
-});
+// documents.onDidChangeContent(change => {
+//     validateTextDocument(change.document);
+// });
 async function validateTextDocument(textDocument) {
     const settings = await getDocumentSettings(textDocument.uri);
     if (!settings.enableDiagnostics) {
