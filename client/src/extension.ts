@@ -18,7 +18,7 @@ const defaultBuildTaskDefinition = {
   type: 'masmbuild',
   label: 'Build',
   files: ['${file}'],
-  output: '${fileBasenameNoExtension}.exe',
+  output: '${fileDirname}/${fileBasenameNoExtension}.exe',
   compilerArgs: [
     "/c",
     "/coff",
@@ -218,6 +218,7 @@ export function createRealShellExecution(def: MasmbuildTaskDefinition): vscode.S
   const expandedFiles = ensureFullPaths(def.files.map(f =>
     substituteVSCodeVariables(f, editor, workspaceFolder)
   ));
+
   const expandedOutput = substituteVSCodeVariables(def.output, editor, workspaceFolder);
 
   const compilerArgs = def.compilerArgs || [];
