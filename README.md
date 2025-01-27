@@ -61,12 +61,7 @@ This extension contributes the following settings:
 ## Known Issues
 
 - The debugger currently supports only console applications.
-
-## Release Notes
-
-### 1.0.0
-
-- Initial release.
+- The linter only supports a small subset of the MASM language.
 
 ---
 
