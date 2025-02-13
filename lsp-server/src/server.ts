@@ -225,10 +225,6 @@ const registers = [
     { name: 'EBX', detail: 'Base Register', documentation: 'General-purpose base register.' },
     { name: 'ECX', detail: 'Counter Register', documentation: 'General-purpose counter register.' },
     { name: 'EDX', detail: 'Data Register', documentation: 'General-purpose data register.' },
-    { name: 'EAX', detail: 'Accumulator Register', documentation: 'General-purpose accumulator register.' },
-    { name: 'EBX', detail: 'Base Register', documentation: 'General-purpose base register.' },
-    { name: 'ECX', detail: 'Counter Register', documentation: 'General-purpose counter register.' },
-    { name: 'EDX', detail: 'Data Register', documentation: 'General-purpose data register.' },
     { name: 'ESI', detail: 'Source Index', documentation: 'Source index for string operations.' },
     { name: 'EDI', detail: 'Destination Index', documentation: 'Destination index for string operations.' },
     { name: 'EBP', detail: 'Base Pointer', documentation: 'Pointer to base of the stack.' },
@@ -256,6 +252,64 @@ const registers = [
     { name: 'GS', detail: 'GS Segment', documentation: 'GS segment register.' },
     { name: 'SS', detail: 'Stack Segment', documentation: 'Stack segment register.' }
 ];
+
+const directives = [
+    { name: '.CODE', detail: 'Code segment directive', documentation: 'Specifies the beginning of a code segment.' },
+    { name: '.DATA', detail: 'Data segment directive', documentation: 'Specifies the beginning of a data segment.' },
+    { name: '.STACK', detail: 'Stack segment directive', documentation: 'Specifies the beginning of a stack segment.' },
+    { name: 'DB', detail: 'Define Byte', documentation: 'Defines one or more bytes.' },
+    { name: 'DW', detail: 'Define Word', documentation: 'Defines one or more words.' },
+    { name: 'DD', detail: 'Define Doubleword', documentation: 'Defines one or more doublewords.' },
+    { name: 'DQ', detail: 'Define Quadword', documentation: 'Defines one or more quadwords.' },
+    { name: 'ELSE', detail: 'Else directive', documentation: 'Specifies an alternate block of code for conditional assembly.' },
+    { name: 'ELSEIF', detail: 'Elseif directive', documentation: 'Specifies an alternate condition in conditional assembly.' },
+    { name: 'END', detail: 'End directive', documentation: 'Marks the end of a file.' },
+    { name: 'ENDIF', detail: 'Endif directive', documentation: 'Ends a conditional assembly block.' },
+    { name: 'ENDM', detail: 'End macro', documentation: 'Ends a macro definition.' },
+    { name: 'ENDP', detail: 'End procedure', documentation: 'Ends a procedure definition.' },
+    { name: 'ENDS', detail: 'End structure', documentation: 'Ends a structure definition.' },
+    { name: 'EQU', detail: 'Equate directive', documentation: 'Assigns a constant value to a symbol.' },
+    { name: 'FOR', detail: 'For loop', documentation: 'Starts a for loop in assembly.' },
+    { name: 'FORC', detail: 'For each character loop', documentation: 'Starts a loop iterating over characters.' },
+    { name: 'IF', detail: 'If directive', documentation: 'Begins a conditional assembly block.' },
+    { name: 'IFE', detail: 'If equal directive', documentation: 'Conditional assembly if equal.' },
+    { name: 'IFB', detail: 'If binary directive', documentation: 'Conditional assembly for binary values.' },
+    { name: 'IFNB', detail: 'If not binary directive', documentation: 'Conditional assembly for non-binary values.' },
+    { name: 'IFDIF', detail: 'If different directive', documentation: 'Conditional assembly if different.' },
+    { name: 'IFDIFI', detail: 'If difference immediate directive', documentation: 'Conditional assembly if immediate difference.' },
+    { name: 'IFIDN', detail: 'If identical directive', documentation: 'Conditional assembly if identical.' },
+    { name: 'IFIDNI', detail: 'If not identical directive', documentation: 'Conditional assembly if not identical.' },
+    { name: 'LOCAL', detail: 'Local directive', documentation: 'Declares a local variable or label.' },
+    { name: 'MACRO', detail: 'Macro definition', documentation: 'Starts a macro definition.' },
+    { name: 'PROC', detail: 'Procedure definition', documentation: 'Starts a procedure definition.' },
+    { name: 'STRUC', detail: 'Structure definition', documentation: 'Starts a structure definition.' },
+    { name: 'RECORD', detail: 'Record definition', documentation: 'Starts a record definition.' },
+    { name: 'REPEAT', detail: 'Repeat directive', documentation: 'Starts a repeat loop.' },
+    { name: 'INCLUDE', detail: 'Include directive', documentation: 'Includes another file.' }
+];
+
+const operators = [
+    { name: 'SHL', detail: 'Shift left operator', documentation: 'Shifts bits to the left.' },
+    { name: 'SHR', detail: 'Shift right operator', documentation: 'Shifts bits to the right.' },
+    { name: 'PTR', detail: 'Pointer operator', documentation: 'Specifies a pointer type.' },
+    { name: 'TYPE', detail: 'Type operator', documentation: 'Specifies a type.' },
+    { name: 'SIZE', detail: 'Size operator', documentation: 'Returns the size of a data type or structure.' },
+    { name: 'SIZEOF', detail: 'Sizeof operator', documentation: 'Returns the size of a type or object.' },
+    { name: 'LENGTH', detail: 'Length operator', documentation: 'Returns the length of a data structure.' },
+    { name: 'LENGTHOF', detail: 'Lengthof operator', documentation: 'Returns the length of a type.' },
+    { name: 'WIDTH', detail: 'Width operator', documentation: 'Returns the width of a type.' },
+    { name: 'MASK', detail: 'Mask operator', documentation: 'Applies a bitmask.' },
+    { name: 'OFFSET', detail: 'Offset operator', documentation: 'Returns the offset of a member within a structure.' },
+    { name: 'DUP', detail: 'Duplicate operator', documentation: 'Duplicates a value or structure.' }
+];
+
+const types = [
+    { name: 'BYTE', detail: '8-bit data type', documentation: 'Represents an 8-bit value.' },
+    { name: 'WORD', detail: '16-bit data type', documentation: 'Represents a 16-bit value.' },
+    { name: 'DWORD', detail: '32-bit data type', documentation: 'Represents a 32-bit value.' },
+    { name: 'QWORD', detail: '64-bit data type', documentation: 'Represents a 64-bit value.' }
+];
+
 
 // Called when the client *pulls* for diagnostics
 connection.languages.diagnostics.on(async (params) => {
@@ -431,7 +485,23 @@ connection.onCompletion(
             kind: CompletionItemKind.Variable,
             documentation: reg.documentation
         }));
-        return instrCompletions.concat(registerCompletions);
+        const directiveCompletions: CompletionItem[] = directives.map(dir => ({
+            label: dir.name,
+            kind: CompletionItemKind.Keyword,
+            documentation: dir.documentation
+        }));
+        const operatorCompletions: CompletionItem[] = operators.map(op => ({
+            label: op.name,
+            kind: CompletionItemKind.Operator,
+            documentation: op.documentation
+        }));
+        const typeCompletions: CompletionItem[] = types.map(typ => ({
+            label: typ.name,
+            kind: CompletionItemKind.TypeParameter,
+            documentation: typ.documentation
+        }));
+
+        return instrCompletions.concat(registerCompletions, directiveCompletions, operatorCompletions, typeCompletions);
     }
 );
 
@@ -457,7 +527,7 @@ connection.onHover((params: HoverParams): Hover | null => {
         return null;
     }
 
-    const found = [...instructions, ...registers].find(
+    const found = [...instructions, ...registers, ...directives, ...operators, ...types].find(
         (entry) => entry.name.toUpperCase() === word.toUpperCase()
     );
 
@@ -474,24 +544,21 @@ connection.onHover((params: HoverParams): Hover | null => {
 });
 
 // Helper: extract word at cursor
+// Helper: extract word at the given position
 function getWordAtPosition(document: TextDocument, position: Position): string | null {
     const text = document.getText();
     const offset = document.offsetAt(position);
-
-    let start = offset;
-    let end = offset;
-
-    while (start > 0 && /\w/.test(text.charAt(start - 1))) {
-        start--;
+    // Include `.` for .CODE and .DATA
+    const pattern = /[\w\.]+/g;
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length;
+        if (start <= offset && offset <= end) {
+            return match[0];
+        }
     }
-    while (end < text.length && /\w/.test(text.charAt(end))) {
-        end++;
-    }
-
-    if (start === end) {
-        return null;
-    }
-    return text.substring(start, end);
+    return null;
 }
 
 // Make the text document manager listen on the connection
