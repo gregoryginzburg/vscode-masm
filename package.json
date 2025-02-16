@@ -2,7 +2,7 @@
   "name": "masm-vscode",
   "displayName": "MASM Language VSCode Support",
   "description": "",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "gregoryginzburg",
   "repository": {
     "type": "git",
@@ -217,9 +217,7 @@
       {
         "name": "masm-problem-matcher",
         "owner": "masm",
-        "fileLocation": [
-          "relative", "${workspaceFolder}"
-        ],
+        "fileLocation": "absolute",
         "pattern": {
           "regexp": "^(.*)\\((\\d+)\\)\\s*:\\s*(warning|(?:fatal\\s*)?error)\\s*(A\\d+):\\s*(.*)$",
           "file": 1,
