@@ -49,7 +49,7 @@
             "patterns": [
                 {
                     "name": "variable.register.masm",
-                    "match": "(?i)\\b(AL|AX|EAX|BL|BX|EBX|CL|CX|ECX|DL|DX|EDX|SI|ESI|DI|EDI|BP|EBP|SP|ESP)\\b"
+                    "match": "(?i)\\b(AH|AL|AX|BH|BL|BP|BX|CH|CL|CR0|CR2|CR3|CS|CX|DH|DI|DL|DR0|DR1|DR2|DR3|DR6|DR7|DS|DX|EAX|EBP|EBX|ECX|EDI|EDX|ES|ESI|ESP|FS|GS|SI|SP|SS|ST)\\b"
                 }
             ]
         },
