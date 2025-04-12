@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { exec } from 'child_process';
 import * as vscode from 'vscode';
-import { workspace, ExtensionContext, tasks, Task, TaskScope } from 'vscode';
+import { workspace, ExtensionContext, tasks, Task, DiagnosticSeverity, TaskScope } from 'vscode';
 
 import {
   LanguageClient,
@@ -365,6 +365,10 @@ async function runMasmFile(): Promise<void> {
     }
   }
 
+  // --- Check for linter errors BEFORE building ---
+  const diagnostics = vscode.languages.getDiagnostics(document.uri);
+  const hasLinterErrors = diagnostics.some(d => d.severity === DiagnosticSeverity.Error);
+
   await ensureTasksJsonExists();
 
   const buildTaskLabel = 'Build';
@@ -411,6 +415,12 @@ async function runMasmFile(): Promise<void> {
       console.warn(`Failed to delete temp .bat file: ${err}`);
     }
   }
+
+  // --- Check for linter errors AFTER build completion ---
+  if (hasLinterErrors) {
+    vscode.window.showErrorMessage('Program contains linter errors and cannot be run.');
+    return;
+}
 
   if (exitCode !== 0) {
     vscode.window.showErrorMessage(`Build failed with exit code ${exitCode}.`);
@@ -478,6 +488,10 @@ async function debugMasmFile(): Promise<void> {
     }
   }
 
+  // --- Check for linter errors BEFORE building ---
+  const diagnostics = vscode.languages.getDiagnostics(document.uri);
+  const hasLinterErrors = diagnostics.some(d => d.severity === DiagnosticSeverity.Error);
+
   await ensureTasksJsonExists();
 
   const buildTaskLabel = 'Build';
@@ -525,6 +539,12 @@ async function debugMasmFile(): Promise<void> {
       console.warn(`Failed to delete temp .bat file: ${err}`);
     }
   }
+
+  // --- Check for linter errors AFTER build completion ---
+  if (hasLinterErrors) {
+    vscode.window.showErrorMessage('Program contains linter errors and cannot be debugged.');
+    return;
+}
 
   if (exitCode !== 0) {
     vscode.window.showErrorMessage(`Build failed with exit code ${exitCode}. Aborting debug.`);
