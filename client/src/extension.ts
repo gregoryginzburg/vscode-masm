@@ -176,6 +176,32 @@ interface MasmbuildTaskDefinition extends vscode.TaskDefinition {
 
 
 /**
+ * Проверяет, запущен ли процесс с заданным именем исполняемого файла в Windows.
+ * @param executableName Имя файла, например "myprogram.exe"
+ * @returns Promise, который разрешается в true, если процесс найден, иначе false.
+ */
+function isProcessRunning(executableName: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    // /NH - без заголовка, /FI - фильтр
+    const command = `tasklist /NH /FI "IMAGENAME eq ${executableName}"`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error checking tasklist: ${error.message}`);
+        resolve(false);
+        return;
+      }
+      if (stderr) {
+        console.warn(`Stderr checking tasklist: ${stderr}`);
+      }
+      // Если stdout содержит имя процесса, значит он запущен
+      resolve(stdout.toLowerCase().includes(executableName.toLowerCase()));
+    });
+  });
+}
+
+
+
+/**
  * (B) Actually build up the multiline ShellExecution for compile+link,
  *     using user/workspace settings for compilerPath, linkerPath, etc.
  */
@@ -382,6 +408,21 @@ async function runMasmFile(): Promise<void> {
     definition = buildTask.definition as MasmbuildTaskDefinition;
   }
 
+  // --- Проверка, не запущен ли уже исполняемый файл ---
+  try {
+    const outputFilePath = ensureFullPath(substituteVSCodeVariables(definition.output, editor, workspaceFolder));
+    const executableName = path.basename(outputFilePath);
+
+    if (await isProcessRunning(executableName)) {
+      vscode.window.showErrorMessage(
+        `Cannot start build: The output file '${executableName}' is already running. Please close the existing console window and try again.`
+      );
+      return;
+    }
+  } catch (e) {
+    console.error("Error preparing for process check:", e);
+  }
+
   buildTask = new vscode.Task(
     definition,
     vscode.TaskScope.Workspace,        // or TaskScope.Global
@@ -420,7 +461,7 @@ async function runMasmFile(): Promise<void> {
   if (hasLinterErrors) {
     vscode.window.showErrorMessage('Program contains linter errors and cannot be run.');
     return;
-}
+  }
 
   if (exitCode !== 0) {
     vscode.window.showErrorMessage(`Build failed with exit code ${exitCode}.`);
@@ -505,6 +546,21 @@ async function debugMasmFile(): Promise<void> {
     definition = buildTask.definition as MasmbuildTaskDefinition;
   }
 
+  // --- Проверка, не запущен ли уже исполняемый файл ---
+  try {
+    const outputFilePath = ensureFullPath(substituteVSCodeVariables(definition.output, editor, workspaceFolder));
+    const executableName = path.basename(outputFilePath);
+
+    if (await isProcessRunning(executableName)) {
+      vscode.window.showErrorMessage(
+        `Cannot start build: The output file '${executableName}' is already running. Please close the existing console window and try again.`
+      );
+      return;
+    }
+  } catch (e) {
+    console.error("Error preparing for process check:", e);
+  }
+
   buildTask = new vscode.Task(
     definition,
     vscode.TaskScope.Workspace,        // or TaskScope.Global
@@ -544,7 +600,7 @@ async function debugMasmFile(): Promise<void> {
   if (hasLinterErrors) {
     vscode.window.showErrorMessage('Program contains linter errors and cannot be debugged.');
     return;
-}
+  }
 
   if (exitCode !== 0) {
     vscode.window.showErrorMessage(`Build failed with exit code ${exitCode}. Aborting debug.`);
