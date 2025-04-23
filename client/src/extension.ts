@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { exec } from 'child_process';
 import * as vscode from 'vscode';
-import { workspace, ExtensionContext, tasks, Task, DiagnosticSeverity, TaskScope } from 'vscode';
+import { workspace, ExtensionContext, tasks, Task, DiagnosticSeverity, ConfigurationTarget, TaskScope } from 'vscode';
 
 import {
   LanguageClient,
@@ -42,6 +42,10 @@ const defaultDebugConfig: vscode.DebugConfiguration = {
   // This matches the default "output" from our tasks.json
   // program: '${workspaceFolder}/${fileBasenameNoExtension}.exe',
 };
+
+const openSettingsItem: vscode.MessageItem = { title: "Open Settings" };
+const reportIssueItem: vscode.MessageItem = { title: "Report Issue" };
+const repoIssuesUrl = 'https://t.me/gregory_ginzburg';
 
 export function activate(context: ExtensionContext) {
   // The server is implemented in node
@@ -142,6 +146,10 @@ export function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.debugMasmFile', debugMasmFile)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('masm.toggleDiagnostics', toggleDiagnostics)
   );
 
   context.subscriptions.push(masmBuildTaskProvider);
@@ -415,7 +423,7 @@ async function runMasmFile(): Promise<void> {
 
     if (await isProcessRunning(executableName)) {
       vscode.window.showErrorMessage(
-        `Cannot start build: The output file '${executableName}' is already running. Please close the existing console window and try again.`
+        `Cannot start build: The output file '${executableName}' is already running. Please close the existing console window and try again.`, { modal: true }
       );
       return;
     }
@@ -459,8 +467,22 @@ async function runMasmFile(): Promise<void> {
 
   // --- Check for linter errors AFTER build completion ---
   if (hasLinterErrors) {
-    vscode.window.showErrorMessage('Program contains linter errors and cannot be run.');
-    return;
+    const message = `Cannot Run MASM File: Linter errors detected. If you believe this is a linter bug, you can disable diagnostics via 'Open Settings' to run anyway and report the issue using 'Report Issue'.`;
+
+    // Показываем сообщение с кнопками
+    vscode.window.showErrorMessage(message, openSettingsItem, reportIssueItem)
+      .then(selection => {
+        // Обрабатываем нажатие кнопки
+        if (selection === openSettingsItem) {
+          // Открываем настройки с фильтром по ID вашей настройки
+          vscode.commands.executeCommand('workbench.action.openSettings', 'masmLanguageServer.enableDiagnostics');
+        } else if (selection === reportIssueItem) {
+          // Открываем URL для баг-репортов во внешнем браузере
+          vscode.env.openExternal(vscode.Uri.parse(repoIssuesUrl));
+        }
+        // Если пользователь закрыл уведомление (selection === undefined), ничего не делаем
+      });
+    return; // Прервать выполнение runMasmFile
   }
 
   if (exitCode !== 0) {
@@ -553,7 +575,7 @@ async function debugMasmFile(): Promise<void> {
 
     if (await isProcessRunning(executableName)) {
       vscode.window.showErrorMessage(
-        `Cannot start build: The output file '${executableName}' is already running. Please close the existing console window and try again.`
+        `Cannot start build: The output file '${executableName}' is already running. Please close the existing console window and try again.`, { modal: true }
       );
       return;
     }
@@ -598,8 +620,22 @@ async function debugMasmFile(): Promise<void> {
 
   // --- Check for linter errors AFTER build completion ---
   if (hasLinterErrors) {
-    vscode.window.showErrorMessage('Program contains linter errors and cannot be debugged.');
-    return;
+    const message = `Cannot Debug MASM File: Linter errors detected. If you believe this is a linter bug, you can disable diagnostics via 'Open Settings' to run anyway and report the issue using 'Report Issue'.`;
+
+    // Показываем сообщение с кнопками
+    vscode.window.showErrorMessage(message, openSettingsItem, reportIssueItem)
+      .then(selection => {
+        // Обрабатываем нажатие кнопки
+        if (selection === openSettingsItem) {
+          // Открываем настройки с фильтром по ID вашей настройки
+          vscode.commands.executeCommand('workbench.action.openSettings', 'masmLanguageServer.enableDiagnostics');
+        } else if (selection === reportIssueItem) {
+          // Открываем URL для баг-репортов во внешнем браузере
+          vscode.env.openExternal(vscode.Uri.parse(repoIssuesUrl));
+        }
+        // Если пользователь закрыл уведомление (selection === undefined), ничего не делаем
+      });
+    return; // Прервать выполнение runMasmFile
   }
 
   if (exitCode !== 0) {
@@ -722,6 +758,28 @@ export function substituteVSCodeVariables(
   }
 
   return output;
+}
+
+
+async function toggleDiagnostics(): Promise<void> {
+  const config = vscode.workspace.getConfiguration('masmLanguageServer');
+  const currentSetting = config.get<boolean>('enableDiagnostics');
+  const newValue = !currentSetting;
+
+  try {
+      // Определяем, куда записывать настройку: в Workspace, если открыта папка, иначе в User (Global)
+      const target = vscode.workspace.workspaceFolders
+          ? ConfigurationTarget.Workspace
+          : ConfigurationTarget.Global;
+
+      await config.update('enableDiagnostics', newValue, target);
+
+      // Показываем сообщение пользователю
+      vscode.window.showInformationMessage(`MASM Diagnostics ${newValue ? 'Enabled' : 'Disabled'}.`);
+  } catch (error) {
+      vscode.window.showErrorMessage(`Failed to toggle MASM diagnostics: ${error}`);
+      console.error("Error updating MASM diagnostics setting:", error);
+  }
 }
 
 

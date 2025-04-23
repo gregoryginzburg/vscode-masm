@@ -2,7 +2,7 @@
   "name": "masm-vscode",
   "displayName": "MASM Language VSCode Support",
   "description": "",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "publisher": "gregoryginzburg",
   "repository": {
     "type": "git",
@@ -33,9 +33,9 @@
         "icon": "$(bug)"
       },
       {
-        "command": "helloworld.helloWorld",
-        "title": "Hello World"
-      }
+        "command": "masm.toggleDiagnostics",
+        "title": "MASM: Toggle Diagnostics Enable/Disable"
+    }
     ],
     "keybindings": [
       {
@@ -145,7 +145,8 @@
         "masmLanguageServer.enableDiagnostics": {
           "type": "boolean",
           "default": true,
-          "description": "Enable diagnostics"
+          "description": "Enable/disable diagnostic reporting (linting) from the MASM language server.",
+          "scope": "resource"
         },
         "masm.compilerPath": {
           "type": "string",
