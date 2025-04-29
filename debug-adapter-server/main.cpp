@@ -19,7 +19,7 @@
 #include <fstream>
 
 // #define USE_SERVER_MODE
-#define LOG_TO_FILE "C:\\Users\\grigo\\Documents\\masm\\log.txt"
+#define LOG_TO_FILE "C:\\Users\\grigo\\log.txt"
 
 namespace dap {
 
