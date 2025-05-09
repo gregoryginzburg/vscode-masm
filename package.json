@@ -2,7 +2,7 @@
   "name": "masm-vscode",
   "displayName": "MASM Language VSCode Support",
   "description": "",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "publisher": "gregoryginzburg",
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
       {
         "command": "masm.toggleDiagnostics",
         "title": "MASM: Toggle Diagnostics Enable/Disable"
-    }
+      }
     ],
     "keybindings": [
       {
@@ -220,7 +220,7 @@
         "owner": "masm",
         "fileLocation": "absolute",
         "pattern": {
-          "regexp": "^(.*)\\((\\d+)\\)\\s*:\\s*(warning|(?:fatal\\s*)?error)\\s*(A\\d+):\\s*(.*)$",
+          "regexp": "^([^()]+)\\((\\d+)\\)\\s*:\\s*(error|warning)\\s+([A-Z]\\d+):\\s*(.*)$",
           "file": 1,
           "line": 2,
           "severity": 3,

@@ -13,6 +13,7 @@ import {
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
+// let diagnosticCollection: vscode.DiagnosticCollection;
 
 const defaultBuildTaskDefinition = {
   type: 'masmbuild',
@@ -46,6 +47,8 @@ const defaultDebugConfig: vscode.DebugConfiguration = {
 const openSettingsItem: vscode.MessageItem = { title: "Open Settings" };
 const reportIssueItem: vscode.MessageItem = { title: "Report Issue" };
 const repoIssuesUrl = 'https://t.me/gregory_ginzburg';
+
+// const COMPILER_DIAGNOSTIC_SOURCE = 'masm-compiler';
 
 export function activate(context: ExtensionContext) {
   // The server is implemented in node
@@ -467,7 +470,7 @@ async function runMasmFile(): Promise<void> {
 
   // --- Check for linter errors AFTER build completion ---
   if (hasLinterErrors) {
-    const message = `Cannot Run MASM File: Linter errors detected. If you believe this is a linter bug, you can disable diagnostics via 'Open Settings' to run anyway and report the issue using 'Report Issue'.`;
+    const message = `Cannot Run MASM File: Errors detected. You can disable diagnostics using 'Open Settings' to run anyway and report the issue using 'Report Issue'.`;
 
     // Показываем сообщение с кнопками
     vscode.window.showErrorMessage(message, openSettingsItem, reportIssueItem)
@@ -620,7 +623,7 @@ async function debugMasmFile(): Promise<void> {
 
   // --- Check for linter errors AFTER build completion ---
   if (hasLinterErrors) {
-    const message = `Cannot Debug MASM File: Linter errors detected. If you believe this is a linter bug, you can disable diagnostics via 'Open Settings' to run anyway and report the issue using 'Report Issue'.`;
+    const message = `Cannot Debug MASM File: Errors detected. You can disable diagnostics using 'Open Settings' to run anyway and report the issue using 'Report Issue'.`;
 
     // Показываем сообщение с кнопками
     vscode.window.showErrorMessage(message, openSettingsItem, reportIssueItem)
@@ -767,20 +770,164 @@ async function toggleDiagnostics(): Promise<void> {
   const newValue = !currentSetting;
 
   try {
-      // Определяем, куда записывать настройку: в Workspace, если открыта папка, иначе в User (Global)
-      const target = vscode.workspace.workspaceFolders
-          ? ConfigurationTarget.Workspace
-          : ConfigurationTarget.Global;
+    // Определяем, куда записывать настройку: в Workspace, если открыта папка, иначе в User (Global)
+    const target = vscode.workspace.workspaceFolders
+      ? ConfigurationTarget.Workspace
+      : ConfigurationTarget.Global;
 
-      await config.update('enableDiagnostics', newValue, target);
+    await config.update('enableDiagnostics', newValue, target);
 
-      // Показываем сообщение пользователю
-      vscode.window.showInformationMessage(`MASM Diagnostics ${newValue ? 'Enabled' : 'Disabled'}.`);
+    // Показываем сообщение пользователю
+    vscode.window.showInformationMessage(`MASM Diagnostics ${newValue ? 'Enabled' : 'Disabled'}.`);
   } catch (error) {
-      vscode.window.showErrorMessage(`Failed to toggle MASM diagnostics: ${error}`);
-      console.error("Error updating MASM diagnostics setting:", error);
+    vscode.window.showErrorMessage(`Failed to toggle MASM diagnostics: ${error}`);
+    console.error("Error updating MASM diagnostics setting:", error);
   }
 }
+
+// // Вывод диагностики компилятора в UI
+// // Нужен доступ к stdout терминала, это сложно (нужен CustomExecution)
+// interface ParsedDiagnostic {
+//   uri: vscode.Uri;
+//   diagnostic: vscode.Diagnostic;
+// }
+
+// /**
+//  * Парсит вывод компилятора MASM из строки.
+//  * @param output Строка с выводом stdout и stderr компилятора.
+//  * @returns Массив разобранных объектов диагностики.
+//  */
+// function parseCompilerOutput(output: string): ParsedDiagnostic[] {
+//   const diagnostics: ParsedDiagnostic[] = [];
+//   // Регулярки для удаления ненужных строк
+//   const copyrightLineRegex = /^ Microsoft \(R\) Macro Assembler Version .*$/m;
+//   const copyrightLineRegex2 = /^Copyright \(C\) Microsoft Corp .*$/m;
+//   const assemblingLineRegex = /^ Assembling: .*$/m;
+//   const changingDirRegex = /^ Changing directory to: .*$/m; // Удаляем вывод cd
+//   const compilingLineRegex = /^ Compiling.*: .*$/m; // Удаляем вывод echo Compiling
+//   const linkingLineRegex = /^ Linking to output .*$/m; // Удаляем вывод echo Linking
+//   const buildMarkerRegex = /^--- (Starting|Finished) Build.*---$/m; // Удаляем наши маркеры
+//   const emptyLineRegex = /^\s*$/gm; // Для удаления пустых строк
+
+//   // Очищаем вывод от информационных сообщений и пустых строк
+//   const cleanedOutput = output
+//       .replace(copyrightLineRegex, '')
+//       .replace(copyrightLineRegex2, '')
+//       .replace(assemblingLineRegex, '')
+//       .replace(changingDirRegex, '')
+//       .replace(compilingLineRegex, '')
+//       .replace(linkingLineRegex, '')
+//       .replace(buildMarkerRegex, '')
+//       .replace(emptyLineRegex, '\n') // Заменяем пустые строки на одну новую строку для split
+//       .trim(); // Убираем пробелы в начале и конце
+
+//   // Разделяем на строки и фильтруем пустые еще раз на всякий случай
+//   const lines = cleanedOutput.split(/\r?\n/).filter(line => line.trim() !== '');
+//   // Регулярное выражение для разбора строки ошибки/предупреждения
+//   const errorRegex = /^([^()]+)\((\d+)\)\s*:\s*(error|warning)\s+([A-Z]\d+):\s*(.*)$/;
+
+//   console.log(`Parsing ${lines.length} cleaned lines of compiler output.`); // Отладка
+
+//   for (const line of lines) {
+//       const match = line.match(errorRegex); // trim() не нужен, т.к. уже почистили
+//       if (match) {
+//           const fullPath = match[1].trim(); // Путь к файлу
+//           const lineNumber = parseInt(match[2], 10) - 1; // Номер строки (0-based)
+//           const severityType = match[3].toLowerCase(); // 'error' или 'warning'
+//           const errorCode = match[4]; // Код ошибки (Axxxx)
+//           const message = match[5].trim(); // Сообщение
+
+//           // Преобразуем severity
+//           const severity = severityType === 'error'
+//               ? vscode.DiagnosticSeverity.Error
+//               : vscode.DiagnosticSeverity.Warning;
+
+//           try {
+//               // Создаем Uri файла
+//               const fileUri = vscode.Uri.file(fullPath);
+
+//               // Создаем Range (подсветка всей строки, начиная с первого символа)
+//               // Для более точного range нужен доступ к содержимому файла,
+//               // но для подсветки строки этого достаточно.
+//               const range = new vscode.Range(lineNumber, 0, lineNumber, Number.MAX_VALUE); // От 0 до конца строки
+
+//               // Создаем объект Diagnostic
+//               const diagnostic: vscode.Diagnostic = {
+//                   severity,
+//                   range,
+//                   message: `[${errorCode}] ${message}`, // Добавляем код ошибки в сообщение
+//                   source: COMPILER_DIAGNOSTIC_SOURCE // Устанавливаем источник
+//               };
+//               diagnostics.push({ uri: fileUri, diagnostic });
+//                console.log(`Parsed diagnostic: ${fileUri.fsPath}(${lineNumber + 1}) - ${message}`); // Отладка
+//           } catch (uriError) {
+//               console.error(`Failed to create URI for path: "${fullPath}". Error: ${uriError}`); // Отладка URI
+//           }
+
+//       } else { // Логируем только непустые нераспарсенные строки
+//            console.log(`MASM output line not parsed: "${line}"`); // Отладка
+//       }
+//   }
+//   console.log(`Finished parsing. Found ${diagnostics.length} diagnostics.`); // Отладка
+//   return diagnostics;
+// }
+
+
+// /**
+//  * Обрабатывает результат завершенной задачи сборки MASM.
+//  * Читает лог, парсит ошибки, обновляет диагностику и удаляет временные файлы.
+//  * @param logFilePath Путь к временному лог-файлу.
+//  * @param batFilePath Путь к временному bat-файлу.
+//  * @param compiledFileUris Массив URI скомпилированных файлов.
+//  */
+// function processBuildResult(logFilePath: string | undefined, batFilePath: string | undefined, compiledFileUris: Uri[]): void {
+//   let outputLog = '';
+//   if (logFilePath && fs.existsSync(logFilePath)) {
+//       try {
+//           outputLog = fs.readFileSync(logFilePath, 'utf8');
+//           console.log(`Read log file (${logFilePath}), content length: ${outputLog.length}`);
+//       } catch (readErr) { console.error(`Failed to read log file ${logFilePath}: ${readErr}`); }
+//   } else if (logFilePath) { console.warn(`Log file not found: ${logFilePath}`);}
+//   else { console.error("Log file path is missing."); }
+
+//   // --- Очистка временных файлов ---
+//   if (logFilePath) { try { fs.unlinkSync(logFilePath); console.log(`Deleted log file: ${logFilePath}`); } catch (err) { console.warn(`Failed to delete log file ${logFilePath}: ${err}`) } }
+//   if (batFilePath) { try { fs.unlinkSync(batFilePath); console.log(`Deleted bat file: ${batFilePath}`); } catch (err) { console.warn(`Failed to delete bat file ${batFilePath}: ${err}`) } }
+//   // --------------------------------
+
+//   // --- Парсинг и обновление диагностики ---
+//   const parsedCompilerDiagnostics = parseCompilerOutput(outputLog);
+//   const newCompilerDiagsMap = new Map<string, vscode.Diagnostic[]>();
+//   parsedCompilerDiagnostics.forEach(item => {
+//       const uriString = item.uri.toString();
+//       if (!newCompilerDiagsMap.has(uriString)) newCompilerDiagsMap.set(uriString, []);
+//       newCompilerDiagsMap.get(uriString)!.push(item.diagnostic);
+//   });
+
+//   // --- Объединяем и Устанавливаем Диагностику ---
+//   compiledFileUris.forEach(uri => {
+//       const uriString = uri.toString();
+//       // Получаем текущие линтерные + возможно старые компиляторные (которые не были очищены, если файл не компилировался)
+//       const currentDiags = diagnosticCollection.get(uri) || [];
+//       const linterDiags = currentDiags.filter(d => d.source !== COMPILER_DIAGNOSTIC_SOURCE); // Гарантированно берем только линтер
+//       const compilerDiags = newCompilerDiagsMap.get(uriString) || []; // Новые от компилятора
+//       const finalDiagnostics = [...linterDiags, ...compilerDiags];
+//       diagnosticCollection.set(uri, finalDiagnostics);
+//       console.log(`Set ${finalDiagnostics.length} diagnostics for compiled file ${uri.fsPath}`);
+//   });
+//   // Обрабатываем "новые" файлы из диагностики компилятора
+//   newCompilerDiagsMap.forEach((compilerDiags, uriString) => {
+//       const uri = vscode.Uri.parse(uriString);
+//       if (!compiledFileUris.some(cU => cU.toString() === uriString)) { // Если не было в списке компилируемых
+//           const currentDiags = diagnosticCollection.get(uri) || [];
+//           const linterDiags = currentDiags.filter(d => d.source !== COMPILER_DIAGNOSTIC_SOURCE);
+//           const finalDiagnostics = [...linterDiags, ...compilerDiags];
+//           diagnosticCollection.set(uri, finalDiagnostics);
+//           console.log(`Set ${finalDiagnostics.length} diagnostics for newly added ${uri.fsPath}`);
+//       }
+//   });
+//   // ----------------------------------------
+// }
 
 
 export function deactivate(): Thenable<void> | undefined {
