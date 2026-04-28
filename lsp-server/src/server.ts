@@ -202,6 +202,8 @@ const instructions = [
     { name: 'RET', detail: 'Return', documentation: 'Returns from a procedure.' },
     { name: 'ROL', detail: 'Rotate Left', documentation: 'Rotates bits to the left.' },
     { name: 'ROR', detail: 'Rotate Right', documentation: 'Rotates bits to the right.' },
+    { name: 'SAL', detail: 'Shift Arithmetic Left', documentation: 'Shifts bits to the left, filling the vacant low-order bit with zero. Operationally identical to SHL.' },
+    { name: 'SAR', detail: 'Shift Arithmetic Right', documentation: 'Shifts bits to the right, replicating the high-order bit (sign bit) into the vacated positions.' },
     { name: 'SBB', detail: 'Subtract with Borrow', documentation: 'Subtracts source and the carry flag from the destination.' },
     { name: 'SHL', detail: 'Shift Left', documentation: 'Shifts bits to the left.' },
     { name: 'SHR', detail: 'Shift Right', documentation: 'Shifts bits to the right.' },

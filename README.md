@@ -3,7 +3,8 @@
 MASM Language VSCode Support provides syntax highlighting, IntelliSense, debugging, and build automation for the Microsoft Macro Assembler (MASM) in Visual Studio Code.
 
 > [!NOTE]
-> **Extension in Development**  
+> **Extension is intended mainly for use by the students of CMC MSU (ВМК МГУ) faculty**
+> **Extension doesn't currently support full masm specification, only a SUBSET of the language**  
 > This MASM Language VSCode Support extension is currently under development and provides a limited feature set. Please note the following constraints:  
 > - **Directives**: Only a small subset of basic MASM directives are supported.  
 > - **Preprocessor**: Features like macros and `include` files are not yet implemented.  
@@ -64,10 +65,6 @@ This extension contributes the following settings:
 - The linter only supports a small subset of the MASM language.
 
 ---
-
-## Contributing
-
-We welcome contributions! Feel free to submit issues or pull requests at [GitHub Repository](https://github.com/gregoryginzburg/vscode-masm).
 
 ## For More Information
 
