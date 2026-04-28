@@ -46,7 +46,7 @@ const defaultDebugConfig: vscode.DebugConfiguration = {
 
 const openSettingsItem: vscode.MessageItem = { title: "Open Settings" };
 const reportIssueItem: vscode.MessageItem = { title: "Report Issue" };
-const repoIssuesUrl = 'https://t.me/gregory_ginzburg';
+const repoIssuesUrl = 'https://github.com/gregoryginzburg/vscode-masm/issues';
 
 // const COMPILER_DIAGNOSTIC_SOURCE = 'masm-compiler';
 
